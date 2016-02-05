@@ -763,47 +763,47 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 YY_RULE_SETUP
 #line 12 "source.lex"
-{printf("tPO");}
+{printf("tPO"); return tPO;}
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
 #line 13 "source.lex"
-{printf("tPF");}
+{printf("tPF"); return tPA;}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
 #line 14 "source.lex"
-{printf("tAO");}
+{printf("tAO"); return tAO;}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
 #line 15 "source.lex"
-{printf("tAF");}
+{printf("tAF"); return tAF;}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
 #line 16 "source.lex"
-{printf("tPLUS");}
+{printf("tPLUS"); return tPLUS;}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
 #line 17 "source.lex"
-{printf("tMOINS");}
+{printf("tMOINS"); return tMOINS;}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
 #line 18 "source.lex"
-{printf("tMUL");}
+{printf("tMUL"); return tMUL;}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
 #line 19 "source.lex"
-{printf("tDIV");}
+{printf("tDIV"); return tDIV;}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
 #line 20 "source.lex"
-{printf("tEQ");}
+{printf("tEQ"); return tEQ;}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
@@ -818,7 +818,7 @@ YY_RULE_SETUP
 case 12:
 YY_RULE_SETUP
 #line 23 "source.lex"
-{printf("tVIR");}
+{printf("tVIR"); return tVIR;}
 	YY_BREAK
 case 13:
 /* rule 13 can match eol */
@@ -829,37 +829,37 @@ YY_RULE_SETUP
 case 14:
 YY_RULE_SETUP
 #line 25 "source.lex"
-{printf("tMAIN");}
+{printf("tMAIN"); return tMAIN;}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
 #line 26 "source.lex"
-{printf("tINT");}
+{printf("tINT"); return tINT;}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
 #line 27 "source.lex"
-{printf("tCONST");}
+{printf("tCONST"); return tCONST;}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
 #line 28 "source.lex"
-{printf("tPRINT");}
+{printf("tPRINT"); return tPRINT;}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
 #line 29 "source.lex"
-{printf("tID");}
+{printf("tID"); return tID;}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
 #line 30 "source.lex"
-{printf("tNB");}
+{printf("tNB"); return tNB;}
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
 #line 31 "source.lex"
-{printf("tNBEXP");}
+{printf("tNBEXP"); return tNBEXP;}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
