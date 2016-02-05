@@ -10,7 +10,7 @@ EXP		[0-9]+[eE][+-]?[0-9]+
 
 %%
 "(" {printf("tPO"); return tPO;}
-")" {printf("tPF"); return tPA;}
+")" {printf("tPF"); return tPF;}
 "{" {printf("tAO"); return tAO;}
 "}" {printf("tAF"); return tAF;}
 "+" {printf("tPLUS"); return tPLUS;}
@@ -26,6 +26,7 @@ EXP		[0-9]+[eE][+-]?[0-9]+
 "int" {printf("tINT"); return tINT;}
 "const" {printf("tCONST"); return tCONST;}
 "print" {printf("tPRINT"); return tPRINT;}
+"return" {printf("tRETURN"); return tRETURN}
 {TEXT} {printf("tID"); return tID;}
 {NB} {printf("tNB"); return tNB;}
 {EXP} {printf("tNBEXP"); return tNBEXP;}

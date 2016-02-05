@@ -26,6 +26,7 @@ EXP		[0-9]+[eE][+-]?[0-9]+
 "int" {printf("tINT ");}
 "const" {printf("tCONST ");}
 "print" {printf("tPRINT ");}
+"return" {printf("tReturn");}
 {TEXT} {printf("tID ");}
 {NB} {printf("tNB ");}
 {EXP} {printf("tNBEXP ");}
