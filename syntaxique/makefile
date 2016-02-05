@@ -12,4 +12,4 @@ testyacc: $(LEXFILE) $(YACCFILE)
 	gcc y.tab.c lex.yy.c -ll -o $@
 
 clean:
-	rm y.tab.c lex.yy.c
+	rm y.tab.c y.tab.h lex.yy.c

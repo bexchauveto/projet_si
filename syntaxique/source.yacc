@@ -5,12 +5,20 @@
 %token tPO tPF tAO tAF tPLUS tMOINS tMUL tDIV tEQ tVIR tMAIN tINT tCONST tPRINT tID tNB tNBEXP tRETURN
 %start Prg
 %%
+/* ---- DEFINITION UTILES ---- */
+Type : tINT;
+
+/* ---- DEFINITION DU FICHIER ---- */
 Prg : Fct Prg
 	| ;
+
+/* ---- DEFINITION DES FONCTIONS ---- */
 Fct : DeclFct ABody;
-DeclFct : tINT tID tPO Params tPF;
-Params : tINT tID SuiteParams | ;
-SuiteParams : tVIR tINT tID SuiteParams | ;
+DeclFct : Type tID tPO Params tPF;
+Params : Type tID SuiteParams | ;
+SuiteParams : tVIR Type tID SuiteParams | ;
+
+/* ---- DEFINITION DES BLOCS ---- */
 ABody : tAO Body tAF;
 Body : BodyHead BodyBelly BodyFoot
 BodyHead : DeclVar BodyHead | ;
@@ -21,9 +29,11 @@ BodyBelly : ExpAr ABody
 	| ABody
 //	| Print ABody;
 BodyFoot : Ret | ;
-DeclVar : tINT tID SuiteDeclVar
-	| tINT tID
-	| tINT tID tEQ ExpAr SuiteDeclVar;
+
+/* ---- DEFINITION DES INSTRUCTIONS ---- */
+DeclVar : Type tID SuiteDeclVar
+	| Type tID
+	| Type tID tEQ ExpAr SuiteDeclVar;
 SuiteDeclVar : tVIR tID SuiteDeclVar
 	| tVIR tID tEQ ExpAr SuiteDeclVar
 	| ;
