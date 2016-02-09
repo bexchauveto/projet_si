@@ -1,16 +1,20 @@
 %{
-#include<stdio.h>	
+
+#include <stdio.h>
+#include <stdlib.h>	
 %}
 
 %token tPO tPF tAO tAF tPLUS tMOINS tMUL tDIV tEQ tVIR tMAIN tINT tCONST tPRINT tID tNB tNBEXP tRETURN
 %start Prg
+
 %%
-/* ---- DEFINITION UTILES ---- */
-Type : tINT;
 
 /* ---- DEFINITION DU FICHIER ---- */
 Prg : Fct Prg
-	| ;
+	| Fct ;
+
+/* ---- DEFINITION UTILES ---- */
+Type : tINT;
 
 /* ---- DEFINITION DES FONCTIONS ---- */
 Fct : DeclFct ABody;
@@ -38,12 +42,12 @@ SuiteDeclVar : tVIR tID SuiteDeclVar
 	| tVIR tID tEQ ExpAr SuiteDeclVar
 	| ;
 ExpAr : ExpAr tPLUS ExpAr
-	| ExpAr tMOINS ExpAr
+	| ExpAr tMOINS ExpAr 
 	| ExpAr tMUL ExpAr
 	| ExpAr tDIV ExpAr
-	| tNB
+	| tNB 
 	| tNBEXP
-	| tID;
+	| tID ;
 //While : t
 Ret : tRETURN ExpAr;
 %%
@@ -56,4 +60,5 @@ int yyerror(char* s)
 int main(void)
 {
 	yyparse();
+	return 0;
 }
