@@ -1,5 +1,5 @@
 
-INPUT=source.lex
+INPUT=source.l
 
 
 
