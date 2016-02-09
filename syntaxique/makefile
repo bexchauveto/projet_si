@@ -1,6 +1,6 @@
 
-LEXFILE=source.lex
-YACCFILE=source.yacc
+LEXFILE=source.l
+YACCFILE=source.y
 
 
 all: testyacc
