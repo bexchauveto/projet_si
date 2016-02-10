@@ -2,7 +2,7 @@
 
 typedef struct {
 	char code;
-	int var[3];
+	int op[3];
 } Instruction;
 
 
@@ -12,6 +12,25 @@ Instruction code[1000];
 int data[1000];
 int test(int addr) { return addr>=0 && addr<1000 }
 
+typedef struct {
+	char code;
+	int nbOp;
+} InstInfo;
+const InstInfo tabInstInfo[] = [
+	{ '1', 3 },
+	{ '2', 3 },
+	{ '3', 3 },
+	{ '4', 3 },
+	{ '5', 3 },
+	{ '6', 3 },
+	{ '7', 3 },
+	{ '8', 3 },
+	{ '9', 3 },
+	{ 'A', 3 },
+	{ 'B', 3 },
+	{ 'C', 3 },
+	{ '\0', 0 },
+]
 
 
 void execute;
@@ -61,15 +80,15 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-int readInst(Instruction* ins, int nbVar)
+int readInst(Instruction* ins, int nbOp)
 {
 	int error, i;
-	for(i=0; i<nbVar; i++)
+	for(i=0; i<nbOp; i++)
 	{
-		error = fscanf(fichier, "%d", &(ins->var[i]));
+		error = fscanf(fichier, "%d", &(ins->op[i]));
 		if(error != 1)
 			return -2;
-		if(!test(ins->var[i]))
+		if(!test(ins->op[i]))
 			return -3;
 	}
 	return 0;
@@ -77,7 +96,7 @@ int readInst(Instruction* ins, int nbVar)
 
 int readFile()
 {
-	int i;
+	int i, j;
 	int error = 0;
 	char c = 0;
 	for(i=0; 1; i++)
@@ -88,48 +107,17 @@ int readFile()
 		if(error != 1)
 			return -1;
 		ins.code = c;
-		switch(c)
+		
+		for(j=0; tabInstInfo[j].code != '\0'; j++)
 		{
-			case '1':
-				error = readInst(ins, 3);
+			if(tabInstInfo[j].code == c)
+			{
+				error = readInst(ins, tabInstInfo[j].nbOp);
 				break;
-			case '2':
-				error = readInst(ins, 3);
-				break;
-			case '3':
-				error = readInst(ins, 3);
-				break;
-			case '4':
-				error = readInst(ins, 3);
-				break;
-			case '5':
-				error = readInst(ins, 2);
-				break;
-			case '6':
-				error = readInst(ins, 2);
-				break;
-			case '7':
-				error = readInst(ins, 1);
-				break;
-			case '8':
-				error = readInst(ins, 2);
-				break;
-			case '9':
-				error = readInst(ins, 3);
-				break;
-			case 'A':
-				error = readInst(ins, 3);
-				break;
-			case 'B':
-				error = readInst(ins, 3);
-				break;
-			case 'C':
-				error = readInst(ins, 1);
-				break;
-			default:
-				error = -1;
-				break;
+			}
 		}
+		if(tabInstInfo[j].code == '\0')
+			error = -1;
 		if(error != 0)
 			break;
 		
