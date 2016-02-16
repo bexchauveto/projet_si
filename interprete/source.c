@@ -1,22 +1,29 @@
+#include <stdlib.h>
 #include <stdio.h>
+
+
+#define SIZE_TABS 1000
 
 typedef struct {
 	char code;
 	int op[3];
 } Instruction;
 
-
-
-FILE* fichier;
-Instruction code[1000];
-int data[1000];
-int test(int addr) { return addr>=0 && addr<1000 }
-
 typedef struct {
 	char code;
 	int nbOp;
 } InstInfo;
-const InstInfo tabInstInfo[] = [
+
+
+
+FILE* fichier;
+
+int R_IP;
+Instruction code[SIZE_TABS];
+int data[SIZE_TABS];
+
+
+const InstInfo tabInstInfo[] = {
 	{ '1', 3 },
 	{ '2', 3 },
 	{ '3', 3 },
@@ -30,10 +37,18 @@ const InstInfo tabInstInfo[] = [
 	{ 'B', 3 },
 	{ 'C', 3 },
 	{ '\0', 0 },
-]
+};
 
 
-void execute;
+
+int test(int addr) { return addr>=0 && addr<SIZE_TABS; }
+int readInst(Instruction* ins, int nbOp);
+int readFile();
+void execute();
+void execInst(Instruction* ins);
+
+
+
 
 
 int main(int argc, char *argv[])
@@ -80,20 +95,6 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-int readInst(Instruction* ins, int nbOp)
-{
-	int error, i;
-	for(i=0; i<nbOp; i++)
-	{
-		error = fscanf(fichier, "%d", &(ins->op[i]));
-		if(error != 1)
-			return -2;
-		if(!test(ins->op[i]))
-			return -3;
-	}
-	return 0;
-}
-
 int readFile()
 {
 	int i, j;
@@ -112,7 +113,7 @@ int readFile()
 		{
 			if(tabInstInfo[j].code == c)
 			{
-				error = readInst(ins, tabInstInfo[j].nbOp);
+				error = readInst(&ins, tabInstInfo[j].nbOp);
 				break;
 			}
 		}
@@ -126,10 +127,75 @@ int readFile()
 	return error;
 }
 
+int readInst(Instruction* ins, int nbOp)
+{
+	int error, i;
+	for(i=0; i<nbOp; i++)
+	{
+		error = fscanf(fichier, "%d", &(ins->op[i]));
+		if(error != 1)
+			return -2;
+		if(!test(ins->op[i]))
+			return -3;
+	}
+	return 0;
+}
+
+
+
+
+
+
 void execute()
 {
-	
+	Instruction ins;
+	R_IP = 0;
+	while(0)
+	{
+		ins = code[R_IP];
+		execInst(&ins);
+	}
 }
+
+void execInst(Instruction* ins)
+{
+	R_IP++;
+	switch(ins->code)
+	{
+		case '1':
+			break;
+		case '2':
+			break;
+		case '3':
+			break;
+		case '4':
+			break;
+		case '5':
+			break;
+		case '6':
+			break;
+		case '7':
+			break;
+		case '8':
+			break;
+		case '9':
+			break;
+		case 'A':
+			break;
+		case 'B':
+			break;
+		case 'C':
+			break;
+		default:
+			break;
+	}
+}
+
+
+
+
+
+
 
 
 

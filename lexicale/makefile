@@ -6,9 +6,11 @@ INPUT=source.l
 all: testlex
 
 
-testlex: $(INPUT)
-	flex $<
+testlex: lex.yy.c
 	gcc lex.yy.c -ll -o $@
+	
+lex.yy.c: $(INPUT)
+	flex $<
 
 clean:
 	rm lex.yy.c

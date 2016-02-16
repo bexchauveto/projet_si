@@ -6,10 +6,14 @@ YACCFILE=source.y
 all: testyacc
 
 
-testyacc: $(LEXFILE) $(YACCFILE)
-	yacc -d $(YACCFILE)
-	flex $(LEXFILE)
+testyacc: y.tab.c lex.yy.c
 	gcc y.tab.c lex.yy.c -ll -o $@
+
+y.tab.c: $(YACCFILE)
+	yacc -d $<
+
+lex.yy.c: $(LEXFILE)
+	flex $<
 
 clean:
 	rm y.tab.c y.tab.h lex.yy.c
