@@ -44,8 +44,10 @@ const InstInfo tabInstInfo[] = {
 int test(int addr) { return addr>=0 && addr<SIZE_TABS; }
 int readInst(Instruction* ins, int nbOp);
 int readFile();
-void execute();
-void execInst(Instruction* ins);
+int execute();
+int execInst(Instruction* ins);
+void afficheData(int indice, int nb);
+void afficheInst(int indice, int nb);
 
 
 
@@ -71,7 +73,7 @@ int main(int argc, char *argv[])
         exit(0);
     }
     
-    
+    printf("Lecture du fichier...\n");
     error = readFile();
     switch(error)
     {
@@ -90,17 +92,23 @@ int main(int argc, char *argv[])
     
     fclose(fichier);
     
-    execute();
+    printf("Interpretation du code...\n");
+    error = execute();
     
     return 0;
 }
+
+
+
+
+/******         Lecture         ******/
 
 int readFile()
 {
 	int i, j;
 	int error = 0;
 	char c = 0;
-	for(i=0; 1; i++)
+	for(i=1; 1; i++)
 	{
 		Instruction ins;
 		
@@ -124,6 +132,10 @@ int readFile()
 		
 		code[i] = ins;
 	}
+	
+	i++;
+	code[i].code = '\0';
+	
 	return error;
 }
 
@@ -143,57 +155,105 @@ int readInst(Instruction* ins, int nbOp)
 
 
 
+/******         Execute         ******/
 
 
-
-void execute()
+int execute()
 {
+	int error = 0;
 	Instruction ins;
-	R_IP = 0;
-	while(0)
+	R_IP = 1;
+	while(!error)
 	{
 		ins = code[R_IP];
-		execInst(&ins);
+		error = execInst(&ins);
 	}
+	return error;
 }
 
-void execInst(Instruction* ins)
+int val(Instruction* ins, int op)
+{ return data[ins->op[op]]; }
+
+int* p_val(Instruction* ins, int op)
+{ return &data[ins->op[op]]; }
+
+int execInst(Instruction* ins)
 {
 	R_IP++;
+	if(ins->code != 0)
+		printf("code : %c\n", ins->code);
+	else
+		printf("code : 0\n");
 	switch(ins->code)
 	{
+		case 0:
+			return 1;
 		case '1':
+			*p_val(ins,0) = val(ins,1) + val(ins,2);
 			break;
 		case '2':
+			*p_val(ins,0) = val(ins,1) * val(ins,2);
 			break;
 		case '3':
+			*p_val(ins,0) = val(ins,1) - val(ins,2);
 			break;
 		case '4':
+			*p_val(ins,0) = val(ins,1) / val(ins,2);
 			break;
 		case '5':
+			*p_val(ins,0) = val(ins,1);
 			break;
 		case '6':
+			*p_val(ins,0) = ins->op[1];
 			break;
 		case '7':
+			R_IP = ins->op[0];
 			break;
 		case '8':
+			if(val(ins,0) == 0)
+				R_IP = ins->op[1];
 			break;
 		case '9':
+			*p_val(ins,0) = val(ins,1) < val(ins,2);
 			break;
 		case 'A':
+			*p_val(ins,0) = val(ins,1) > val(ins,2);
 			break;
 		case 'B':
+			*p_val(ins,0) = val(ins,1) == val(ins,2);
 			break;
 		case 'C':
+			printf("%d\n",val(ins,0));
 			break;
 		default:
 			break;
 	}
+	return 0;
 }
 
 
 
 
+
+/******         Divers         ******/
+
+void afficheData(int indice, int nb)
+{
+	printf("data => \n");
+	for(int i=indice; i<indice+nb; i++)
+	{
+		printf("  %d : %d\n", i, data[i]);
+	}
+}
+
+void afficheInst(int indice, int nb)
+{
+	printf("code : \n");
+	for(int i=indice; i<indice+nb; i++)
+	{
+		printf("  %d : %c\n", i, code[i].code);
+	}
+}
 
 
 
