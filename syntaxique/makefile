@@ -10,7 +10,7 @@ testyacc: y.tab.c lex.yy.c
 	gcc y.tab.c lex.yy.c -ll -o $@
 
 y.tab.c: $(YACCFILE)
-	yacc -d $<
+	yacc -d -v $<
 
 lex.yy.c: $(LEXFILE)
 	flex $<

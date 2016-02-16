@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "y.tab.h"
 
 %}
 
@@ -27,7 +28,7 @@ EXP		[0-9]+[eE][+-]?[0-9]+
 "int" {printf("tINT"); return tINT;}
 "const" {printf("tCONST"); return tCONST;}
 "print" {printf("tPRINT"); return tPRINT;}
-"return" {printf("tRETURN"); return tRETURN}
+"return" {printf("tRETURN"); return tRETURN;}
 {TEXT} {printf("tID"); return tID;}
 {NB} {printf("tNB"); return tNB;}
 {EXP} {printf("tNBEXP"); return tNBEXP;}
