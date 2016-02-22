@@ -13,9 +13,9 @@ typedef struct {
 } InstInfo;
 
 
-#define SIZE_TABS 1000
-Instruction code[SIZE_TABS];
-int data[SIZE_TABS];
+
+Instruction code[1000];
+int data[1000];
 int R_IP;
 
 #define ERR_CODE '\0'
@@ -24,27 +24,27 @@ const InstInfo tabInstInfo[] = {
 	{ '2', 3 },
 	{ '3', 3 },
 	{ '4', 3 },
-	{ '5', 3 },
-	{ '6', 3 },
-	{ '7', 3 },
-	{ '8', 3 },
+	{ '5', 2 },
+	{ '6', 2 },
+	{ '7', 1 },
+	{ '8', 2 },
 	{ '9', 3 },
 	{ 'A', 3 },
 	{ 'B', 3 },
-	{ 'C', 3 },
+	{ 'C', 1 },
 	{ ERR_CODE, 0 },
 };
 
 
 int getNbOp(char code)
 {
-	for(j=0; tabInstInfo[j].code != ERR_CODE; j++)
+	for(int j=0; tabInstInfo[j].code != ERR_CODE; j++)
 		if(tabInstInfo[j].code == code)
 			return tabInstInfo[j].nbOp;
 	return -1;
 }
 // lecture
-int readInst(char* line, Instruction* ins, int nbOp);
+int readInst(FILE* fichier, Instruction* ins, int nbOp);
 int readFile(FILE* fichier);
 // execute
 int execute();
@@ -59,8 +59,7 @@ void afficheInst(int indice, int nb);
 
 int main(int argc, char *argv[])
 {
-	int error;
-    fichier = NULL;
+    FILE* fichier = NULL;
 	
 	if(argc != 2)
 	{
@@ -77,13 +76,13 @@ int main(int argc, char *argv[])
         exit(0);
     }
     
-    printf("Lecture du fichier...\n");
-    error = readFile(fichier);
+    // lecture du fichier
+    readFile(fichier);
     
     fclose(fichier);
     
-    printf("Interpretation du code...\n");
-    error = execute();
+    // Interpretation du code
+    execute();
     
     return 0;
 }
@@ -95,18 +94,16 @@ int main(int argc, char *argv[])
 
 int readFile(FILE* fichier)
 {
-	int i, j;
+	int i = 1;
 	int error = 0;
-	char c = 0;
-	char line[100];
+	char line[100]; // to skip
 	Instruction ins;
 	
-	for(i=1; (error = fgets(line,sizeof(line)-1,fichier)); i++)
-	{
+	do {
 		// lecture code operation
-		error = sscanf(fichier, "%c",&(ins.code))
+		error = fscanf(fichier, "%c",&(ins.code));
 		if(error != 1) {
-			printf("Erreur : lecture code operation\n");
+			//printf("Erreur : lecture code operation\n");
 			continue;
 		}
 		
@@ -116,14 +113,15 @@ int readFile(FILE* fichier)
 			printf("Erreur : nombre d'operandes inconnu pour le code (%c)\n", ins.code);
 			continue;
 		}
-		error = readInst(line, &ins, error);
+		error = readInst(fichier, &ins, error);
 		if(error == -2) {
 			printf("Erreur : nombre d'operandes invalide pour le code (%c)\n", ins.code);
 			continue;
 		}
 		
 		code[i] = ins;
-	}
+		i++;
+	} while((error = fgets(line,sizeof(line)-1,fichier)));
 	
 	i++;
 	code[i].code = ERR_CODE;
@@ -132,12 +130,12 @@ int readFile(FILE* fichier)
 	return 0;
 }
 
-int readInst(char* line, Instruction* ins, int nbOp)
+int readInst(FILE* fichier, Instruction* ins, int nbOp)
 {
 	int error, i;
 	for(i=0; i<nbOp; i++)
 	{
-		error = sscanf(line, "%d", &(ins->op[i]));
+		error = fscanf(fichier, "%d", &(ins->op[i]));
 		if(error != 1)
 			return -2;
 	}
@@ -178,10 +176,12 @@ int testData(Instruction* ins, int op)
 int execInst(Instruction* ins)
 {
 	R_IP++;
-	if(ins->code != 0)
+	// trace?
+	/*if(ins->code != 0)
 		printf("code : %c\n", ins->code);
 	else
-		printf("code : 0\n");
+		printf("code : 0\n");*/
+	// l'exe-switch!
 	switch(ins->code)
 	{
 		case 0:
