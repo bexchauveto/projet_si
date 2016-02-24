@@ -3,14 +3,9 @@
 
 
 typedef struct {
-	char code;
+	unsigned int code;
 	int op[3];
 } Instruction;
-
-typedef struct {
-	char code;
-	int nbOp;
-} InstInfo;
 
 
 
@@ -18,31 +13,7 @@ Instruction code[1000];
 int data[1000];
 int R_IP;
 
-#define ERR_CODE '\0'
-const InstInfo tabInstInfo[] = {
-	{ '1', 3 },
-	{ '2', 3 },
-	{ '3', 3 },
-	{ '4', 3 },
-	{ '5', 2 },
-	{ '6', 2 },
-	{ '7', 1 },
-	{ '8', 2 },
-	{ '9', 3 },
-	{ 'A', 3 },
-	{ 'B', 3 },
-	{ 'C', 1 },
-	{ ERR_CODE, 0 },
-};
 
-
-int getNbOp(char code)
-{
-	for(int j=0; tabInstInfo[j].code != ERR_CODE; j++)
-		if(tabInstInfo[j].code == code)
-			return tabInstInfo[j].nbOp;
-	return -1;
-}
 // lecture
 int readInst(FILE* fichier, Instruction* ins, int nbOp);
 int readFile(FILE* fichier);
@@ -94,6 +65,8 @@ int main(int argc, char *argv[])
 
 int readFile(FILE* fichier)
 {
+	//                          ERR,1, 2, 3, 4, 5, 6, 7, 8, 9, A, B, C
+	const int tabInstInfo[] = { 0, 3, 3, 3, 3, 2, 2, 1, 2, 3, 3, 3, 1 };
 	int i = 1;
 	int error = 0;
 	char line[100]; // to skip
@@ -101,19 +74,20 @@ int readFile(FILE* fichier)
 	
 	do {
 		// lecture code operation
-		error = fscanf(fichier, "%c",&(ins.code));
+		error = fscanf(fichier, "%x",&(ins.code));
 		if(error != 1) {
 			//printf("Erreur : lecture code operation\n");
 			continue;
 		}
 		
-		// lectures operandes
-		error = getNbOp(ins.code);
-		if(error == -1) {
-			printf("Erreur : nombre d'operandes inconnu pour le code (%c)\n", ins.code);
+		if(ins.code > 12) {
+			error = -1;
+			printf("Erreur : code operation inconnu (%c)\n", ins.code);
 			continue;
 		}
-		error = readInst(fichier, &ins, error);
+		
+		// lectures operandes
+		error = readInst(fichier, &ins, tabInstInfo[ins.code]);
 		if(error == -2) {
 			printf("Erreur : nombre d'operandes invalide pour le code (%c)\n", ins.code);
 			continue;
@@ -124,8 +98,8 @@ int readFile(FILE* fichier)
 	} while((error = fgets(line,sizeof(line)-1,fichier)));
 	
 	i++;
-	code[i].code = ERR_CODE;
-	code[0].code = ERR_CODE;
+	code[i].code = 0;
+	code[0].code = 0;
 	
 	return 0;
 }
@@ -186,61 +160,61 @@ int execInst(Instruction* ins)
 	{
 		case 0:
 			return 1;
-		case '1':
+		case 0x1:
 			if(!testData(ins,0) || !testData(ins,1) || !testData(ins,2))
 				return -1;
 			*p_val(ins,0) = val(ins,1) + val(ins,2);
 			break;
-		case '2':
+		case 0x2:
 			if(!testData(ins,0) || !testData(ins,1) || !testData(ins,2))
 				return -1;
 			*p_val(ins,0) = val(ins,1) * val(ins,2);
 			break;
-		case '3':
+		case 0x3:
 			if(!testData(ins,0) || !testData(ins,1) || !testData(ins,2))
 				return -1;
 			*p_val(ins,0) = val(ins,1) - val(ins,2);
 			break;
-		case '4':
+		case 0x4:
 			if(!testData(ins,0) || !testData(ins,1) || !testData(ins,2))
 				return -1;
 			*p_val(ins,0) = val(ins,1) / val(ins,2);
 			break;
-		case '5':
+		case 0x5:
 			if(!testData(ins,0) || !testData(ins,1))
 				return -1;
 			*p_val(ins,0) = val(ins,1);
 			break;
-		case '6':
+		case 0x6:
 			if(!testData(ins,0))
 				return -1;
 			*p_val(ins,0) = ins->op[1];
 			break;
-		case '7':
+		case 0x7:
 			R_IP = ins->op[0];
 			break;
-		case '8':
+		case 0x8:
 			if(!testData(ins,0))
 				return -1;
 			if(val(ins,0) == 0)
 				R_IP = ins->op[1];
 			break;
-		case '9':
+		case 0x9:
 			if(!testData(ins,0) || !testData(ins,1) || !testData(ins,2))
 				return -1;
 			*p_val(ins,0) = val(ins,1) < val(ins,2);
 			break;
-		case 'A':
+		case 0xA:
 			if(!testData(ins,0) || !testData(ins,1) || !testData(ins,2))
 				return -1;
 			*p_val(ins,0) = val(ins,1) > val(ins,2);
 			break;
-		case 'B':
+		case 0xB:
 			if(!testData(ins,0) || !testData(ins,1) || !testData(ins,2))
 				return -1;
 			*p_val(ins,0) = val(ins,1) == val(ins,2);
 			break;
-		case 'C':
+		case 0xC:
 			if(!testData(ins,0))
 				return -1;
 			printf("%d\n",val(ins,0));

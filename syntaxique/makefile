@@ -1,19 +1,29 @@
 
-LEXFILE=source.l
-YACCFILE=source.y
+SRC=$(wildcard src/*.c)
+OBJ:=$(SRC:.c=.o)
+OBJ:=$(OBJ:src/%=obj/%)
+
+SRC_AUTO=auto/lex.yy.c auto/y.tab.c
+OBJ_AUTO=$(SRC_AUTO:.c=.o)
+
+CFLAGS=-Wall -std=c99
 
 
 all: testyacc
 
 
-testyacc: y.tab.c lex.yy.c
-	gcc y.tab.c lex.yy.c -ll -o $@
+testyacc: $(OBJ) $(OBJ_AUTO)
+	gcc -g $^ -ll -o $@
 
-y.tab.c: $(YACCFILE)
-	yacc -d -v $<
+#### obj
+auto/%.o:
+	$(MAKE) -C auto/ $($@:auto/%=%)
 
-lex.yy.c: $(LEXFILE)
-	flex $<
+obj/%.o: src/%.c
+	gcc -c $< $(CFLAGS) -o $@
 
+
+#### clean
 clean:
-	rm y.tab.c y.tab.h lex.yy.c
+	- rm obj/*
+	- $(MAKE) -C auto/ clean
