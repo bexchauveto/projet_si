@@ -7,12 +7,15 @@ SRC_AUTO_LEX=lex.yy.c
 SRC_AUTO_YACC=y.tab.c
 OBJ_AUTO=$(SRC_AUTO_LEX:.c=.o) $(SRC_AUTO_YACC:.c=.o)
 
+INCLUDE=-I "../src/"
+LDFLAGS=$(INCLUDE)
+
 
 all: $(OBJ_AUTO)
 
 #### obj
 %.o: %.c
-	gcc -c $^ -o $@
+	gcc -c $^ $(LDFLAGS) -o $@
 
 
 #### lex

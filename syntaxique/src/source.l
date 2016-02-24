@@ -20,15 +20,17 @@ EXP		[0-9]+[eE][+-]?[0-9]+
 "*" {printf("tMUL"); return tMUL;}
 "/" {printf("tDIV"); return tDIV;}
 "=" {printf("tEQ"); return tEQ;}
+"," {printf("tVIR"); return tVIR;}
+";" {printf("tPTVIR"); return tPTVIR;}
 " " ;
-[ \t] ;
-[ ,] {printf("tVIR"); return tVIR;}
-[ \n] ;
-"main" {printf("tMAIN"); return tMAIN;}
+[\t] ;
+[\n] ;
 "int" {printf("tINT"); return tINT;}
 "const" {printf("tCONST"); return tCONST;}
 "print" {printf("tPRINT"); return tPRINT;}
 "return" {printf("tRETURN"); return tRETURN;}
+"if" {printf("tIF"); return tIF;}
+"while" {printf("tWHILE"); return tWHILE;}
 {TEXT} {printf("tID"); return tID;}
 {NB} {printf("tNB"); return tNB;}
 {EXP} {printf("tNBEXP"); return tNBEXP;}

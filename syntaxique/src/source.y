@@ -2,73 +2,102 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "compil.h"
+
 int yylex();
 int yyerror(char *s);	
+
+
+
 %}
 
-%token tPO tPF tAO tAF tPLUS tMOINS tMUL tDIV tEQ tVIR tMAIN tINT tCONST tPRINT tID tNB tNBEXP tRETURN
+%token tPO tPF tAO tAF tPLUS tMOINS tMUL tDIV tEQ tVIR tINT tCONST tPRINT tID tNB tNBEXP tRETURN tPTVIR tIF tWHILE
+
 %start Prg
+
+%right tEQ
 %left tPLUS tMOINS
-%right tMUL tDIV
+%left tMUL tDIV
 
 
 %%
 
 /* ---- DEFINITION DU FICHIER ---- */
-Prg : 
-	| Fct Prg;
-/* ---- DEFINITION UTILES ---- */
-Type : 
-	  tINT;
+Prg : // !! lancer c_progBegin()
+	  Fct Prg
+	| ;
 
 /* ---- DEFINITION DES FONCTIONS ---- */
 Fct : 
-	  DeclFct ABody;
-DeclFct : 
-	  Type NomFct tPO Params tPF;
-NomFct : 
-	  tMAIN
-	| tID;
+	  Prototype Bloc { c_fctEnd(); };
+Prototype : 
+	  tINT tID tPO Params tPF { /* table des fonctions && label */ } ;
 Params : 
-	| Type tID SuiteParams;
+	  DeclParam
+	| ;
+DeclParam :
+	  tINT tID;
 SuiteParams :
-	| tVIR Type tID SuiteParams;
+	  tVIR DeclParam SuiteParams
+	| ;
 
 /* ---- DEFINITION DES BLOCS ---- */
-ABody : 
-	  tAO Body tAF;
+Bloc : 
+	  tAO      { c_openbloc(); }
+	  Body tAF { c_closebloc(); };
 Body : 
 	  BodyHead BodyBelly BodyFoot;
 BodyHead : 
-	| DeclVar BodyHead;
+	  DeclVar BodyHead
+	| ;
 BodyBelly : 
-	| ExpAr Body;
-//	| While ABody
-//	| If ABody
-//	| AppelFct BodyBelly
-//	| ABody;
-//	| Print ABody;
+	  Instruction BodyBelly
+	| ;
 BodyFoot :
-	| Ret;
+	  Ret
+	| ;
+
+/* ---- DEFINITION DES DECLARATIONS ---- */
+DeclVar : 
+	  tINT tID SuiteDeclVar
+	| tINT tID
+//	| tINT tID tEQ Expr SuiteDeclVar;
+SuiteDeclVar : 
+	  tVIR tID SuiteDeclVar
+//	| tVIR tID tEQ Expr SuiteDeclVar
+	| ;
 
 /* ---- DEFINITION DES INSTRUCTIONS ---- */
-DeclVar : 
-	  Type tID SuiteDeclVar
-	| Type tID
-	| Type tID tEQ ExpAr SuiteDeclVar;
-SuiteDeclVar : 
-	| tVIR tID SuiteDeclVar
-	| tVIR tID tEQ ExpAr SuiteDeclVar;
-ExpAr : 
-	  ExpAr tPLUS ExpAr
-	| ExpAr tMOINS ExpAr 
-	| ExpAr tMUL ExpAr
-	| ExpAr tDIV ExpAr
-	| tNB 
-	| tNBEXP
-	| tID ;
-//While : t
-Ret : tRETURN ExpAr;
+Instruction :
+	  Expr tPTVIR
+	| Bloc
+	| While
+	| If;
+Expr : 
+	  Expr tPLUS { c_mov(); }
+	  		Expr { c_add(); }
+	| Expr tMOINS { c_mov(); }
+			Expr { c_sub(); }
+	| Expr tMUL { c_mov(); }
+			Expr { c_mul(); }
+	| Expr tDIV { c_mov(); }
+			Expr { c_div(); }
+	| tID tEQ Expr { /* c_strVal(???); */ }
+	| AppelFct { /* c_fctCall(???); */ }
+	| tNB { /* c_ldrVal(???); */ }
+	| tNBEXP { /* c_ldrVal(???); */ }
+	| tID { /* c_ldrVar(???); */ };
+While : 
+	  tWHILE tPO Condition tPF Instruction;
+If : 
+	  tIF tPO Condition tPF Instruction;
+Condition : 
+	  Expr;
+Ret : tRETURN Expr { c_return() };
+
+
+
 %%
 
 int yyerror(char* s)
