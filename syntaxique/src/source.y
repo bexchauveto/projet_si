@@ -12,7 +12,20 @@ int yyerror(char *s);
 
 %}
 
-%token tPO tPF tAO tAF tPLUS tMOINS tMUL tDIV tEQ tVIR tINT tCONST tPRINT tID tNB tNBEXP tRETURN tPTVIR tIF tWHILE
+%token tPO tPF tAO tAF tPLUS tMOINS tMUL tDIV tEQ tVIR tINT tCONST tPRINT tRETURN tPTVIR tIF tWHILE
+
+%union 
+{
+        int integer;
+        float exp;
+        char *string;
+}
+%token <integer> tNB
+%token <real> tNBEXP
+%token <string> tID
+
+
+
 
 %start Prg
 
@@ -39,7 +52,7 @@ TODO:
 %%
 
 /* ---- DEFINITION DU FICHIER ---- */
-Prg : // !! lancer c_progBegin()
+Prg :
 	  Fct Prg
 	  		{ $$ = st_root($1, $2); }
 	| 		{ $$=0; };
@@ -52,7 +65,7 @@ Prototype :
 	  tINT tID tPO Params tPF 
 	  		{
 	  			int type = st_type(0, 0);
-	  			int id = st_id(0);
+	  			int id = st_id($2);
 	  			$$ = st_prototype(type, id, $4);
 			} ;
 Params : 
@@ -63,7 +76,7 @@ DeclParam :
 	  tINT tID 
 	  		{
 	  			int type = st_type(0, 0);
-	  			int id = st_id(0);
+	  			int id = st_id($2);
 	  			$$ = st_param(type, id);
 			};
 SuiteParams :
@@ -95,7 +108,7 @@ DeclVar :
 	  tINT tID SuiteDeclVar
 	  		{
 	  			int type = st_type(0,0);
-	  			int id = st_id(0);
+	  			int id = st_id($2);
 	  			int v = st_declVarVar(id, 0);
 	  			int d2 = st_declVar2(v, $3);
 	  			$$ = st_declVar(type, d2);
@@ -105,7 +118,7 @@ DeclVar :
 SuiteDeclVar : 
 	  tVIR tID SuiteDeclVar
 	  		{
-	  			int id = st_id(0);
+	  			int id = st_id($2);
 	  			int v = st_declVarVar(id, 0);
 	  			$$ = st_declVar2(v, $3);
 			}
@@ -123,7 +136,9 @@ Instruction :
 	| If
 			{ $$ = $1; };
 Expr : 
-	  Expr tPLUS Expr
+	  tPO Expr tPF 
+	  		{ $$ = $2 }
+	| Expr tPLUS Expr
 	  		{ $$ = st_exAdd($1, $3); }
 	| Expr tMOINS Expr
 	  		{ $$ = st_exSub($1, $3); }
@@ -133,8 +148,8 @@ Expr :
 	  		{ $$ = st_exDiv($1, $3); }
 	| tID tEQ Expr
 	  		{
-	  			int id = st_id(0);
-	  			$$ = st_exAffect($1, $3);
+	  			int id = st_id($1);
+	  			$$ = st_exAffect(id, $3);
 			}
 	| AppelFct
 	  		{ $$ = $1; }
@@ -143,7 +158,21 @@ Expr :
 	| tNBEXP
 	  		{ $$ = st_exNb($1); }
 	| tID
-	  		{ $$ = st_id(0); };
+	  		{ $$ = st_id($1); };
+AppelFct : 
+	  tID tPO AppelParams tPF
+	  		{
+	  			int id = st_id($1);
+	  			$$ = st_fctCall(id, $3);
+			};
+AppelParams : 
+	  Expr SuiteAppelParams
+	  		{ $$ = st_callParams($1, $2); }
+	| 		{ $$=0; };
+SuiteAppelParams : 
+	  tVIR Expr SuiteAppelParams
+	  		{ $$ = st_callParams($2, $3); }
+	| 		{ $$=0; };
 While : 
 	  tWHILE tPO Condition tPF Instruction
 	  		{ $$ = st_while($3, $5); };
