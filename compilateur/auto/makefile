@@ -1,7 +1,6 @@
 
-DSRC=../src/
-SRC_LEX=$(DSRC)source.l
-SRC_YACC=$(DSRC)source.y
+SRC_LEX=../src/source.l
+SRC_YACC=../src/source.y
 
 SRC_AUTO_LEX=lex.yy.c
 SRC_AUTO_YACC=y.tab.c

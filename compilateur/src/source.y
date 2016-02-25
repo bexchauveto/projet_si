@@ -11,28 +11,42 @@ int yyerror(char *s);
 
 
 %}
+%start Prg
 
+
+/* ---- DEFINITIONS TOKENS ---- */
 %token tPO tPF tAO tAF tPLUS tMOINS tMUL tDIV tEQ tVIR tINT tCONST tPRINT tRETURN tPTVIR tIF tWHILE
 
 %union 
 {
-        int integer;
-        float exp;
-        char *string;
+	// terminaux
+	int integer;
+	float exp;
+	char *string;
+	
+	// non terminaux
+	int nodeID
 }
 %token <integer> tNB
-%token <real> tNBEXP
+%token <exp> tNBEXP
 %token <string> tID
 
+%type <nodeID> Prg Fct Prototype Params DeclParam SuiteParams 
+%type <nodeID> Bloc Body BodyHead BodyBelly BodyFoot DeclVar SuiteDeclVar 
+%type <nodeID> Instruction Expr AppelFct AppelParams SuiteAppelParams While If Condition Ret
 
 
 
-%start Prg
+/* ---- OPERATEURS ---- */
 
 %right tEQ
 %left tPLUS tMOINS
 %left tMUL tDIV
 
+
+
+
+/* ---- TODO LIST ---- */
 /*
 
 TODO:
@@ -60,7 +74,7 @@ Prg :
 /* ---- DEFINITION DES FONCTIONS ---- */
 Fct : 
 	  Prototype Bloc 
-	  		{ $$ = st_function($1, $2) };
+	  		{ $$ = st_function($1, $2); };
 Prototype : 
 	  tINT tID tPO Params tPF 
 	  		{
@@ -98,7 +112,7 @@ BodyHead :
 BodyBelly : 
 	  Instruction BodyBelly
 	  		{ $$ = st_bodyBelly($1, $2); }
-	| ;
+	| 		{ $$=0; };
 BodyFoot :
 	  Ret	{ $$ = $1; }
 	| 		{ $$=0; };
@@ -112,8 +126,7 @@ DeclVar :
 	  			int v = st_declVarVar(id, 0);
 	  			int d2 = st_declVar2(v, $3);
 	  			$$ = st_declVar(type, d2);
-	  		}
-	| tINT tID
+	  		};
 //	| tINT tID tEQ Expr SuiteDeclVar;
 SuiteDeclVar : 
 	  tVIR tID SuiteDeclVar
@@ -123,7 +136,7 @@ SuiteDeclVar :
 	  			$$ = st_declVar2(v, $3);
 			}
 //	| tVIR tID tEQ Expr SuiteDeclVar
-	| ;
+	| 		{ $$=0; };
 
 /* ---- DEFINITION DES INSTRUCTIONS ---- */
 Instruction :
@@ -137,7 +150,7 @@ Instruction :
 			{ $$ = $1; };
 Expr : 
 	  tPO Expr tPF 
-	  		{ $$ = $2 }
+	  		{ $$ = $2; }
 	| Expr tPLUS Expr
 	  		{ $$ = st_exAdd($1, $3); }
 	| Expr tMOINS Expr
@@ -195,10 +208,10 @@ int yyerror(char* s)
 	printf("%s\n", s);
 }
 
-#if YY_MAIN
+
 int main(void)
 {
 	yyparse();
 	return 0;
 }
-#endif
+

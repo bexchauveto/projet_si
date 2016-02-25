@@ -30,7 +30,6 @@ int st_return(int expr);
 
 /* FEUILLES */
 // cree une feuille de l'arbre syntaxique
-int st_leaf(ast_NodeType nodeType, char* content);
 int st_type(int type, int flags);
 int st_id(char* id);
 int st_exNb(int value);
