@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "compil.h"
+#include "st.h"
 
 int yylex();
 int yyerror(char *s);	
@@ -20,81 +20,142 @@ int yyerror(char *s);
 %left tPLUS tMOINS
 %left tMUL tDIV
 
+/*
+
+TODO:
+- mot clé const
+- opperateurs && ||
+- affectation lors de la declaration
+
+*/
+
+
+
+
+
+
+
 
 %%
 
 /* ---- DEFINITION DU FICHIER ---- */
 Prg : // !! lancer c_progBegin()
 	  Fct Prg
-	| ;
+	  		{ $$ = st_root($1, $2); }
+	| 		{ $$=0; };
 
 /* ---- DEFINITION DES FONCTIONS ---- */
 Fct : 
-	  Prototype Bloc { c_fctEnd(); };
+	  Prototype Bloc 
+	  		{ $$ = st_function($1, $2) };
 Prototype : 
-	  tINT tID tPO Params tPF { /* table des fonctions && label */ } ;
+	  tINT tID tPO Params tPF 
+	  		{
+	  			int type = st_type(0, 0);
+	  			int id = st_id(0);
+	  			$$ = st_prototype(type, id, $4);
+			} ;
 Params : 
-	  DeclParam
-	| ;
+	  DeclParam SuiteParams
+	  		{ $$=st_params($1, $2); }
+	| 		{ $$=0; };
 DeclParam :
-	  tINT tID;
+	  tINT tID 
+	  		{
+	  			int type = st_type(0, 0);
+	  			int id = st_id(0);
+	  			$$ = st_param(type, id);
+			};
 SuiteParams :
 	  tVIR DeclParam SuiteParams
-	| ;
+	  		{ $$ = st_params($2, $3); }
+	| 		{ $$=0; };
 
 /* ---- DEFINITION DES BLOCS ---- */
 Bloc : 
-	  tAO      { c_openbloc(); }
-	  Body tAF { c_closebloc(); };
+	  tAO Body tAF
+	  		{ $$ = $2; };
 Body : 
-	  BodyHead BodyBelly BodyFoot;
+	  BodyHead BodyBelly BodyFoot
+	  		{ $$ = st_bloc($1, $2, $3); };
 BodyHead : 
 	  DeclVar BodyHead
-	| ;
+	  		{ $$ = st_bodyHead($1, $2); }
+	| 		{ $$=0; };
 BodyBelly : 
 	  Instruction BodyBelly
+	  		{ $$ = st_bodyBelly($1, $2); }
 	| ;
 BodyFoot :
-	  Ret
-	| ;
+	  Ret	{ $$ = $1; }
+	| 		{ $$=0; };
 
 /* ---- DEFINITION DES DECLARATIONS ---- */
 DeclVar : 
 	  tINT tID SuiteDeclVar
+	  		{
+	  			int type = st_type(0,0);
+	  			int id = st_id(0);
+	  			int v = st_declVarVar(id, 0);
+	  			int d2 = st_declVar2(v, $3);
+	  			$$ = st_declVar(type, d2);
+	  		}
 	| tINT tID
 //	| tINT tID tEQ Expr SuiteDeclVar;
 SuiteDeclVar : 
 	  tVIR tID SuiteDeclVar
+	  		{
+	  			int id = st_id(0);
+	  			int v = st_declVarVar(id, 0);
+	  			$$ = st_declVar2(v, $3);
+			}
 //	| tVIR tID tEQ Expr SuiteDeclVar
 	| ;
 
 /* ---- DEFINITION DES INSTRUCTIONS ---- */
 Instruction :
 	  Expr tPTVIR
+	  		{ $$ = $1; }
 	| Bloc
+			{ $$ = $1; }
 	| While
-	| If;
+			{ $$ = $1; }
+	| If
+			{ $$ = $1; };
 Expr : 
-	  Expr tPLUS { c_mov(); }
-	  		Expr { c_add(); }
-	| Expr tMOINS { c_mov(); }
-			Expr { c_sub(); }
-	| Expr tMUL { c_mov(); }
-			Expr { c_mul(); }
-	| Expr tDIV { c_mov(); }
-			Expr { c_div(); }
-	| tID tEQ Expr { /* c_strVal(???); */ }
-	| AppelFct { /* c_fctCall(???); */ }
-	| tNB { /* c_ldrVal(???); */ }
-	| tNBEXP { /* c_ldrVal(???); */ }
-	| tID { /* c_ldrVar(???); */ };
+	  Expr tPLUS Expr
+	  		{ $$ = st_exAdd($1, $3); }
+	| Expr tMOINS Expr
+	  		{ $$ = st_exSub($1, $3); }
+	| Expr tMUL Expr
+	  		{ $$ = st_exMul($1, $3); }
+	| Expr tDIV Expr
+	  		{ $$ = st_exDiv($1, $3); }
+	| tID tEQ Expr
+	  		{
+	  			int id = st_id(0);
+	  			$$ = st_exAffect($1, $3);
+			}
+	| AppelFct
+	  		{ $$ = $1; }
+	| tNB
+	  		{ $$ = st_exNb($1); }
+	| tNBEXP
+	  		{ $$ = st_exNb($1); }
+	| tID
+	  		{ $$ = st_id(0); };
 While : 
-	  tWHILE tPO Condition tPF Instruction;
+	  tWHILE tPO Condition tPF Instruction
+	  		{ $$ = st_while($3, $5); };
 If : 
-	  tIF tPO Condition tPF Instruction;
+	  tIF tPO Condition tPF Instruction
+	  		{ $$ = st_if($3, $5); };
 Condition : 
-	  Expr;
-Ret : tRETURN Expr { c_return() };
+	  Expr
+	  		{ $$ = $1; };
+Ret :
+	tRETURN Expr
+			{ $$ = st_return($2); };
 
 
 
