@@ -25,7 +25,7 @@ int yyerror(char *s);
 	char *string;
 	
 	// non terminaux
-	int nodeID
+	void* nodeID;
 }
 %token <integer> tNB
 %token <exp> tNBEXP
@@ -61,15 +61,13 @@ TODO:
 
 
 
-
-
 %%
 
 /* ---- DEFINITION DU FICHIER ---- */
 Prg :
 	  Fct Prg
-	  		{ $$ = st_root($1, $2); }
-	| 		{ $$=0; };
+	  		{ st_root($1, $2); }
+	| 		{ $$=ST_UNDEFINED; };
 
 /* ---- DEFINITION DES FONCTIONS ---- */
 Fct : 
@@ -78,25 +76,25 @@ Fct :
 Prototype : 
 	  tINT tID tPO Params tPF 
 	  		{
-	  			int type = st_type(0, 0);
-	  			int id = st_id($2);
+	  			st_Node_t type = st_type(0, 0);
+	  			st_Node_t id = st_id($2);
 	  			$$ = st_prototype(type, id, $4);
 			} ;
 Params : 
 	  DeclParam SuiteParams
 	  		{ $$=st_params($1, $2); }
-	| 		{ $$=0; };
+	| 		{ $$=ST_UNDEFINED; };
 DeclParam :
 	  tINT tID 
 	  		{
-	  			int type = st_type(0, 0);
-	  			int id = st_id($2);
+	  			st_Node_t type = st_type(0, 0);
+	  			st_Node_t id = st_id($2);
 	  			$$ = st_param(type, id);
 			};
 SuiteParams :
 	  tVIR DeclParam SuiteParams
 	  		{ $$ = st_params($2, $3); }
-	| 		{ $$=0; };
+	| 		{ $$=ST_UNDEFINED; };
 
 /* ---- DEFINITION DES BLOCS ---- */
 Bloc : 
@@ -108,35 +106,35 @@ Body :
 BodyHead : 
 	  DeclVar BodyHead
 	  		{ $$ = st_bodyHead($1, $2); }
-	| 		{ $$=0; };
+	| 		{ $$=ST_UNDEFINED; };
 BodyBelly : 
 	  Instruction BodyBelly
 	  		{ $$ = st_bodyBelly($1, $2); }
-	| 		{ $$=0; };
+	| 		{ $$=ST_UNDEFINED; };
 BodyFoot :
 	  Ret	{ $$ = $1; }
-	| 		{ $$=0; };
+	| 		{ $$=ST_UNDEFINED; };
 
 /* ---- DEFINITION DES DECLARATIONS ---- */
 DeclVar : 
 	  tINT tID SuiteDeclVar
 	  		{
-	  			int type = st_type(0,0);
-	  			int id = st_id($2);
-	  			int v = st_declVarVar(id, 0);
-	  			int d2 = st_declVar2(v, $3);
+	  			st_Node_t type = st_type(0,0);
+	  			st_Node_t id = st_id($2);
+	  			st_Node_t v = st_declVarVar(id, 0);
+	  			st_Node_t d2 = st_declVar2(v, $3);
 	  			$$ = st_declVar(type, d2);
 	  		};
 //	| tINT tID tEQ Expr SuiteDeclVar;
 SuiteDeclVar : 
 	  tVIR tID SuiteDeclVar
 	  		{
-	  			int id = st_id($2);
-	  			int v = st_declVarVar(id, 0);
+	  			st_Node_t id = st_id($2);
+	  			st_Node_t v = st_declVarVar(id, 0);
 	  			$$ = st_declVar2(v, $3);
 			}
 //	| tVIR tID tEQ Expr SuiteDeclVar
-	| 		{ $$=0; };
+	| 		{ $$=ST_UNDEFINED; };
 
 /* ---- DEFINITION DES INSTRUCTIONS ---- */
 Instruction :
@@ -161,7 +159,7 @@ Expr :
 	  		{ $$ = st_exDiv($1, $3); }
 	| tID tEQ Expr
 	  		{
-	  			int id = st_id($1);
+	  			st_Node_t id = st_id($1);
 	  			$$ = st_exAffect(id, $3);
 			}
 	| AppelFct
@@ -175,17 +173,17 @@ Expr :
 AppelFct : 
 	  tID tPO AppelParams tPF
 	  		{
-	  			int id = st_id($1);
+	  			st_Node_t id = st_id($1);
 	  			$$ = st_fctCall(id, $3);
 			};
 AppelParams : 
 	  Expr SuiteAppelParams
 	  		{ $$ = st_callParams($1, $2); }
-	| 		{ $$=0; };
+	| 		{ $$=ST_UNDEFINED; };
 SuiteAppelParams : 
 	  tVIR Expr SuiteAppelParams
 	  		{ $$ = st_callParams($2, $3); }
-	| 		{ $$=0; };
+	| 		{ $$=ST_UNDEFINED; };
 While : 
 	  tWHILE tPO Condition tPF Instruction
 	  		{ $$ = st_while($3, $5); };
