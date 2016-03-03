@@ -8,9 +8,10 @@ typedef struct {
 } Instruction;
 
 
-
-Instruction code[1000];
-int data[1000];
+#define SIZE_CODE 1000
+#define SIZE_DATA 1000
+Instruction code[SIZE_CODE];
+int data[SIZE_DATA];
 int R_IP;
 
 
@@ -145,7 +146,7 @@ int* p_val(Instruction* ins, int op)
 { return &data[ins->op[op]]; }
 
 int testData(Instruction* ins, int op)
-{ return (ins->op[op])>=0 && (ins->op[op])<sizeof(data); }
+{ return (ins->op[op])>=0 && (ins->op[op])<SIZE_DATA; }
 
 int execInst(Instruction* ins)
 {
@@ -222,7 +223,7 @@ int execInst(Instruction* ins)
 		default:
 			break;
 	}
-	if(R_IP<0 && R_IP>=sizeof(code))
+	if(R_IP<0 || R_IP>=SIZE_CODE)
 		return -2;
 	return 0;
 }
@@ -244,7 +245,7 @@ void afficheData(int indice, int nb)
 
 void afficheInst(int indice, int nb)
 {
-	printf("code : \n");
+	printf("code => \n");
 	for(int i=indice; i<indice+nb; i++)
 	{
 		printf("  %d : %c\n", i, code[i].code);
