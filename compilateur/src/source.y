@@ -15,7 +15,7 @@ int yyerror(char *s);
 
 
 /* ---- DEFINITIONS TOKENS ---- */
-%token tPO tPF tAO tAF tPLUS tMOINS tMUL tDIV tEQ tVIR tINT tCONST tPRINT tRETURN tPTVIR tIF tWHILE
+%token tPO tPF tAO tAF tPLUS tMOINS tMUL tDIV tEQ tVIR tINT tCONST tPRINT tRETURN tPTVIR tIF tWHILE tOR tAND tINF tSUP tSUPEQ tINFEQ tEQU tDIFF
 
 %union 
 {
@@ -40,6 +40,10 @@ int yyerror(char *s);
 /* ---- OPERATEURS ---- */
 
 %right tEQ
+%left tOR
+%left tAND
+%left tEQU tDIFF
+%left tINF tINFEQ tSUP tSUPEQ
 %left tPLUS tMOINS
 %left tMUL tDIV
 
@@ -51,7 +55,7 @@ int yyerror(char *s);
 
 TODO:
 - mot clé const
-- opperateurs && ||
+- opperateurs > < >= <= != == (vérifier que ça fasse pas trop merder à l'éxec)
 - affectation lors de la declaration
 
 */
@@ -157,6 +161,22 @@ Expr :
 	  		{ $$ = st_exMul($1, $3); }
 	| Expr tDIV Expr
 	  		{ $$ = st_exDiv($1, $3); }
+	| Expr tOR Expr
+			{ $$ = st_exOr($1, $3); }
+	| Expr tAND Expr
+			{ $$ = st_exAnd($1, $3); }
+	|Expr tSUP Expr
+			{ $$ = st_exSup($1, $3); }
+	|Expr tINF Expr
+			{ $$ = st_exInf($1, $3); }
+	|Expr tSUPEQ Expr
+			{ $$ = st_exSupEq($1, $3); }
+	|Expr tINFEQ Expr
+			{ $$ = st_exInfEq($1, $3); }
+	|Expr tDIFF Expr
+			{ $$ = st_exDiff($1, $3); }
+	|Expr tEQU Expr
+			{ $$ = st_exEqu($1, $3); }
 	| tID tEQ Expr
 	  		{
 	  			st_Node_t id = st_id($1);

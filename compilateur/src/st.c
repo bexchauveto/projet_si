@@ -24,6 +24,14 @@ typedef enum {
 	NT_EXSUB,
 	NT_EXMUL,
 	NT_EXDIV,
+	NT_EXOR,
+	NT_EXAND,
+	NT_EXINF,
+	NT_EXINFEQ,
+	NT_EXSUP,
+	NT_EXSUPEQ,
+	NT_EXDIFF,
+	NT_EXEQU,
 	NT_EXAFFECT,
 	NT_FCTCALL,
 	NT_CALLPARAMS,
@@ -267,6 +275,54 @@ st_Node_t st_exDiv(st_Node_t exp1, st_Node_t exp2)
 {
 	st_Node_t children[] = {exp1, exp2, 0};
 	return createNode(NT_EXDIV, children);
+}
+
+st_Node_t st_exOr(st_Node_t exp1, st_Node_t exp2)
+{
+	st_Node_t children[] = {exp1, exp2, 0};
+	return createNode(NT_EXOR, children);
+}
+
+st_Node_t st_exAnd(st_Node_t exp1, st_Node_t exp2)
+{
+	st_Node_t children[] = {exp1, exp2, 0};
+	return createNode(NT_EXAND, children);
+}
+
+st_Node_t st_exInf(st_Node_t exp1, st_Node_t exp2)
+{
+	st_Node_t children[] = {exp1, exp2, 0};
+	return createNode(NT_EXINF, children);
+}
+
+st_Node_t st_exInfEq(st_Node_t exp1, st_Node_t exp2)
+{
+	st_Node_t children[] = {exp1, exp2, 0};
+	return createNode(NT_EXINFEQ, children);
+}
+
+st_Node_t st_exSup(st_Node_t exp1, st_Node_t exp2)
+{
+	st_Node_t children[] = {exp1, exp2, 0};
+	return createNode(NT_EXSUP, children);
+}
+
+st_Node_t st_exSupEq(st_Node_t exp1, st_Node_t exp2)
+{
+	st_Node_t children[] = {exp1, exp2, 0};
+	return createNode(NT_EXSUPEQ, children);
+}
+
+st_Node_t st_exEqu(st_Node_t exp1, st_Node_t exp2)
+{
+	st_Node_t children[] = {exp1, exp2, 0};
+	return createNode(NT_EXEQU, children);
+}
+
+st_Node_t st_exDiff(st_Node_t exp1, st_Node_t exp2)
+{
+	st_Node_t children[] = {exp1, exp2, 0};
+	return createNode(NT_EXDIFF, children);
 }
 
 st_Node_t st_exAffect(st_Node_t id, st_Node_t value)

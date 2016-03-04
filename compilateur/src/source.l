@@ -24,6 +24,14 @@ EXP		[0-9]+[eE][+-]?[0-9]+
 ","		return tVIR;
 ";"		return tPTVIR;
 " "		;
+">"		return tSUP;
+"<"		return tINF;
+">="	return tSUPEQ;
+"<="	return tINFEQ;
+"!="	return tDIFF;
+"=="	return tEQU;
+"&&"	return tAND;
+"||"	return tOR;
 [\t]	;
 [\n]	;
 "int"	return tINT;
