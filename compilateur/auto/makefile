@@ -23,7 +23,7 @@ $(SRC_AUTO_LEX): $(SRC_LEX) $(SRC_AUTO_YACC)
 
 
 #### yacc
-$(SRC_AUTO_YACC): $(SRC_YACC)
+$(SRC_AUTO_YACC): $(SRC_YACC) ../src/st.h
 	yacc -d -v $<
 
 

@@ -1,14 +1,39 @@
 #include "ass.h"
 
 
-FILE* outFile;
+
+
+//###################################################
+//  DEFINITION UTILES
+//###################################################
+
+
+typedef enum {
+	ADDR_RETURN = 0,
+	ADDR_R1,
+	ADDR_R2,
+	ADDR_SP,
+	ADDR_STACK,
+} UsefullAddress;
 
 
 
 
-void setFile(FILE* file)
+FILE* file;
+
+
+
+
+
+
+
+//###################################################
+//  DEFINITION DES FONCTIONS
+//###################################################
+
+void setFile(FILE* outputFile)
 {
-	outFile = file;
+	file = outputFile;
 }
 
 
@@ -19,22 +44,23 @@ void setFile(FILE* file)
 
 void ass_progBegin()
 {
-
+	fprintf(file, "6 %d 0\n"); // ADDR_STACK <- 0
+	fprintf(file, "6 %d %d\n", ADDR_SP, ADDR_STACK+1); // SP <- ADDR_STACK + 1
+	fprintf(file, "7 .main\n"); // goto main
 }
 
 void ass_progEnd()
 {
-
 }
 
 void ass_fctBegin(char* fctName)
 {
-
+	fprintf(file, ":%s ", fctName);
 }
 
 void ass_fctEnd()
 {
-
+	// Depiler adresse de retour
 }
 
 void ass_blocBegin()

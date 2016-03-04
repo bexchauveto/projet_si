@@ -3,4 +3,4 @@ testlex
 testyacc
 inter
 compilateur/auto/
-syntaxique/
+compilateur/obj/

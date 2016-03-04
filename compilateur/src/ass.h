@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 
-void setFile(FILE* file);
+void setFile(FILE* outputFile);
 
 
 
