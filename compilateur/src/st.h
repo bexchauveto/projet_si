@@ -29,6 +29,8 @@ st_Node_t st_exAdd(st_Node_t exp1, st_Node_t exp2);
 st_Node_t st_exSub(st_Node_t exp1, st_Node_t exp2);
 st_Node_t st_exMul(st_Node_t exp1, st_Node_t exp2);
 st_Node_t st_exDiv(st_Node_t exp1, st_Node_t exp2);
+st_Node_t st_exOr(st_Node_t exp1, st_Node_t exp2);
+st_Node_t st_exAnd(st_Node_t exp1, st_Node_t exp2);
 st_Node_t st_exAffect(st_Node_t id, st_Node_t value);
 st_Node_t st_fctCall(st_Node_t id, st_Node_t params);
 st_Node_t st_callParams(st_Node_t param, st_Node_t next);

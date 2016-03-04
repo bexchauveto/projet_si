@@ -24,6 +24,8 @@ typedef enum {
 	NT_EXSUB,
 	NT_EXMUL,
 	NT_EXDIV,
+	NT_EXOR,
+	NT_EXAND,
 	NT_EXAFFECT,
 	NT_FCTCALL,
 	NT_CALLPARAMS,
@@ -267,6 +269,18 @@ st_Node_t st_exDiv(st_Node_t exp1, st_Node_t exp2)
 {
 	st_Node_t children[] = {exp1, exp2, 0};
 	return createNode(NT_EXDIV, children);
+}
+
+st_Node_t st_exOr(st_Node_t exp1, st_Node_t exp2)
+{
+	st_Node_t children[] = {exp1, exp2, 0};
+	return createNode(NT_EXOR, children);
+}
+
+st_Node_t st_exAnd(st_Node_t exp1, st_Node_t exp2)
+{
+	st_Node_t children[] = {exp1, exp2, 0};
+	return createNode(NT_EXAND, children);
 }
 
 st_Node_t st_exAffect(st_Node_t id, st_Node_t value)

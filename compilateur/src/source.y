@@ -15,7 +15,7 @@ int yyerror(char *s);
 
 
 /* ---- DEFINITIONS TOKENS ---- */
-%token tPO tPF tAO tAF tPLUS tMOINS tMUL tDIV tEQ tVIR tINT tCONST tPRINT tRETURN tPTVIR tIF tWHILE
+%token tPO tPF tAO tAF tPLUS tMOINS tMUL tDIV tEQ tVIR tINT tCONST tPRINT tRETURN tPTVIR tIF tWHILE tOR tAND
 
 %union 
 {
@@ -157,6 +157,10 @@ Expr :
 	  		{ $$ = st_exMul($1, $3); }
 	| Expr tDIV Expr
 	  		{ $$ = st_exDiv($1, $3); }
+	| Expr tOR Expr
+			{ $$ = st_exOr($1, $3); }
+	| Expr tAND Expr
+			{ $$ = st_exAnd($1, $3); }
 	| tID tEQ Expr
 	  		{
 	  			st_Node_t id = st_id($1);
