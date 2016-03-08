@@ -2,5 +2,5 @@ aide
 testlex
 testyacc
 inter
-compilateur/auto/
 compilateur/obj/
+compilateur/dep/
