@@ -13,8 +13,8 @@ LDFLAGS=$(INCLUDE)
 all: $(OBJ_AUTO)
 
 #### obj
-%.o: %.c
-	gcc -c $^ $(LDFLAGS) -o $@
+%.o: %.c ../src/st.h
+	gcc -c $< $(LDFLAGS) -o $@
 
 
 #### lex
@@ -23,10 +23,13 @@ $(SRC_AUTO_LEX): $(SRC_LEX) $(SRC_AUTO_YACC)
 
 
 #### yacc
-$(SRC_AUTO_YACC): $(SRC_YACC) ../src/st.h
+$(SRC_AUTO_YACC): $(SRC_YACC)
 	yacc -d -v $<
 
 
 #### clean
 clean:
 	rm lex.* y.*
+
+
+
