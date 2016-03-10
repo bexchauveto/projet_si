@@ -21,6 +21,8 @@ typedef enum {
 
 
 FILE* file;
+int instructionNumber;
+#define fprintf instructionNumber++;fprintf
 
 
 
@@ -62,6 +64,7 @@ void setFile(FILE* outputFile)
 
 void ass_progBegin()
 {
+	instructionNumber = 0;
 	fprintf(file, "6 %d 0\n", ADDR_STACK); // STACK[0] = 0
 	fprintf(file, "6 %d %d\n", ADDR_SP, ADDR_STACK+1); // SP = ADDR_STACK + 1
 	fprintf(file, "7 .main\n"); // goto main
@@ -73,6 +76,7 @@ void ass_progEnd()
 
 void ass_fctBegin(char* fctName)
 {
+	// TODO enregistrer les parametres dans la table des symboles
 	// TODO poser un label de fonction
 	empiler(ADDR_CONTEXT);
 	fprintf(file, "5 %d %d\n", ADDR_CONTEXT, ADDR_SP);
@@ -100,29 +104,33 @@ void ass_blocEnd()
 void ass_declVar(char* varName, int value)
 {
 	// TODO enregistrer dans la table des symboles (à l'addresse SP)
-	fprintf(file, "6 %d %d\n", x, value); // *varName = value
+	fprintf(file, "6 %d %d\n", ADDR_R1, value); // *varName = value
 	empiler(ADDR_R1);
 }
 
-void ass_ldr(char* varName)
+void ass_ldr(char* varName, int reg)
 {
 	// TODO rechercher varName dans la table des symboles
-	empiler(x);
+	fprintf(file, "5 %d %d\n", ADDR_R0 + reg, x);
 }
 
 void ass_str(char* varName)
 {
 	// TODO rechercher varName dans la table des symboles
-	depiler(x);
+	fprintf(file, "5 %d %d\n", x, ADDR_R0);
 }
 
-void ass_ld(int value)
+void ass_ld(int value, int reg)
 {
-	fprintf(file, "6 %d %d\n", ADDR_R1, value);
-	empiler(ADDR_R1);
+	fprintf(file, "6 %d %d\n", ADDR_R0 + reg, value);
 }
 
-void ass_loadResult(int reg)
+void ass_pushResult()
+{
+	empiler(ADDR_R0);
+}
+
+void ass_popResult(int reg)
 {
 	depiler(ADDR_R0 + reg);
 }
@@ -130,58 +138,63 @@ void ass_loadResult(int reg)
 void ass_add()
 {
 	fprintf(file, "1 %d %d %d\n", ADDR_R0, ADDR_R0, ADDR_R1);
-	empiler(ADDR_R0);
 }
 
 void ass_sub()
 {
 	fprintf(file, "3 %d %d %d\n", ADDR_R0, ADDR_R0, ADDR_R1);
-	empiler(ADDR_R0);
 }
 
 void ass_mul()
 {
 	fprintf(file, "2 %d %d %d\n", ADDR_R0, ADDR_R0, ADDR_R1);
-	empiler(ADDR_R0);
 }
 
 void ass_div()
 {
 	fprintf(file, "4 %d %d %d\n", ADDR_R0, ADDR_R0, ADDR_R1);
-	empiler(ADDR_R0);
 }
 
 void ass_and()
 {
 	// TODO
+	fprintf(file, "8 %d %d\n", ADDR_R0, x); // if(!R0)  goto false;
+	fprintf(file, "8 %d %d\n", ADDR_R1, x); // if(!R1)  goto false;
+	fprintf(file, "6 %d %d\n", ADDR_R0, 1); // R0 = 1
+	fprintf(file, "7 %d\n", x);             // goto end;
+	fprintf(file, "6 %d %d\n", ADDR_R0, 0); // false: R0 = 0
 }
 
 void ass_or()
 {
 	// TODO
+	fprintf(file, "8 %d %d\n", ADDR_R0, x); // if(!R0)  goto testR1;
+	fprintf(file, "6 %d %d\n", ADDR_R0, 1); // R0 = 1
+	fprintf(file, "7 %d\n", x);             // goto end;
+	fprintf(file, "8 %d %d\n", ADDR_R0, x); // if(!R1)  goto false;
+	fprintf(file, "6 %d %d\n", ADDR_R0, 1); // R0 = 1
+	fprintf(file, "7 %d\n", x);             // goto end;
+	fprintf(file, "6 %d %d\n", ADDR_R0, 0); // false: R0 = 0
 }
 
 void ass_inf()
 {
 	fprintf(file, "9 %d %d %d\n", ADDR_R0, ADDR_R0, ADDR_R1);
-	empiler(ADDR_R0);
 }
 
 void ass_sup()
 {
 	fprintf(file, "A %d %d %d\n", ADDR_R0, ADDR_R0, ADDR_R1);
-	empiler(ADDR_R0);
 }
 
 void ass_equ()
 {
 	fprintf(file, "B %d %d %d\n", ADDR_R0, ADDR_R0, ADDR_R1);
-	empiler(ADDR_R0);
 }
 
 void ass_fctCallParam()
 {
-	// pas besoin de depiler pour re-empiler.
+	empiler(ADDR_R0);
 }
 
 void ass_fctCallJmp(char* fctName)
@@ -197,9 +210,8 @@ void ass_ifBegin()
 
 void ass_ifThen()
 {
-	depiler(ADDR_R1);
 	// TODO enregistrer la fin du if dans la table des labels
-	fprintf(file, "jmf %d .%s", ADDR_R1, x);
+	fprintf(file, "jmf %d .%s", ADDR_R0, x);
 }
 
 void ass_ifEnd()
@@ -214,21 +226,19 @@ void ass_whileBegin()
 
 void ass_whileDo()
 {
-	depiler(ADDR_R1);
 	// TODO enregistrer la fin du while dans la table des labels
-	fprintf(file, "jmf %d .%s", ADDR_R1, x);
+	fprintf(file, "8 %d .%s", ADDR_R0, x); // if(!R0) goto whileEnd
 }
 
 void ass_whileEnd()
 {
 	// TODO trouver le nom du label
-	fprintf(file, "jmp .%s", x);
+	fprintf(file, "7 .%s", x); // goto whileBegin
 	// TODO poser un label
 }
 
 void ass_return()
 {
-	depiler(ADDR_R0);
 }
 
 
