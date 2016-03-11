@@ -1,84 +1,110 @@
-#table des symboles
+#include <stdlib.h>
+#include <stdio.h>
 #include "symbole_table.h"
 #include "pile.h"
 
-//Structure de la table des symboles
-typedef struct
-{
-	char * varName;
-	int adresseExec;
-	int courantBloc;
-} symboleStruct;
 
-int numBloc;
 
-Pile * create_table()
+
+int numBloc = 0;
+Pile * symboleTable;
+
+
+void create_table()
 {
-	Pile * symboleTable = malloc(sizeof *symboleTable);
-	numBloc = 0;
-	return *symboleTable;	
+	//printf("function create_table\n");
+	symboleTable = malloc(sizeof *symboleTable);
 }
 
 //Nouveau bloc numbloc++;
 
 void new_bloc()
 {
+	//printf("function new_bloc\n");
 	numBloc++;
 }
 
 //Bloc fini numbloc--;
 
-void end_bloc(Pile ** symboleTable)
+void end_bloc()
 {
-	int notFinish = 0;
-	while(*symboleTable != NULL || notFinish)
+	//printf("function end_bloc\n");
+	int notFinish = 1;
+	while(symboleTable->prec != NULL && notFinish)
 	{
-		if((symboleStruct * )(*tmp->data)->courantBloc == numBloc)
+		printf("%d\n", symboleTable != NULL);
+		//printf("%d, %d\n", ((symboleStruct * )(symboleTable->data))->courantBloc, numBloc);
+		if(((symboleStruct * )(symboleTable->data))->courantBloc == numBloc)
 		{
-			pop_table(**symboleTable);
+			pop_table(&symboleTable);
 		}
 		else
 		{
-			numBloc--;
-			notFinish = 1;
+			notFinish = 0;
 		}
 	}
+	numBloc--;
 }
 
 //Push une variable dans la table
 
-void push_table(Pile ** symboleTable, char * name, int addr)
+void push_table(char * name, int addr)
 {
+	//printf("function push_table\n");
 	symboleStruct * data = malloc (sizeof *data);
 	data->varName = name;
 	data->adresseExec = addr;
 	data->courantBloc = numBloc;
-	pile_push(**symboleTable, (void *) data);
+	pile_push(&symboleTable, (void *) data);
 }
 
 //Pop une variable dans la table
-symboleStruct * pop_table(Pile ** symboleTable)
+symboleStruct * pop_table()
 {
-	return (symboleStruct *)(pile_pop(**symboleTable));
+	//printf("function pop_table\n");
+	return (symboleStruct *)(pile_pop(&symboleTable));
 }
 
 //rechercher une adresse à partir d'un nom
 
-int seek_address_by_name(Pile ** symboleTable, char * name)
+int seek_address_by_name(char * name)
 {
+	//printf("function seek_address_by_name\n");
 	int ret = -1;
-	int notFound = 0;
-	Pile * tmp = *symboleTable
-	while (*tmp != NULL || notFound)
+	int notFound = 1;
+	Pile * tmp = symboleTable;
+	while (tmp->prec != NULL && notFound)
 	{
-		if((symboleStruct * )(*tmp->data)->varName == name)
+		if(((symboleStruct * )(tmp->data))->varName == name)
 		{
-			ret = (symboleStruct * )(*tmp->data)->adresseExec;
-			notFound = 1;
+			ret = ((symboleStruct * )(tmp->data))->adresseExec;
+			notFound = 0;
 		}
 		else {
-			*tmp = *tmp->prec;
+			tmp = tmp->prec;
 		}
 	}
 	return ret;
 }
+
+/*int main(int argc, char const *argv[])
+{
+	create_table();
+	new_bloc();
+	push_table("sym1", 16);
+	push_table("sym2", 24);
+	push_table("sym3", 32);
+	push_table("sym4", 42);
+	new_bloc();
+	push_table("sym5", 58);
+	push_table("sym6", 64);
+	push_table("sym7", 78);
+	end_bloc();
+	symboleStruct * sym = pop_table();
+	printf("avant printf\n");
+	printf("name : %s, addr : %d, bloc : %d\n", sym->varName, sym->adresseExec, sym->courantBloc);
+	int i = seek_address_by_name("sym28");
+	printf("%d\n", i);
+	end_bloc();
+	return 0;
+}*/

@@ -7,4 +7,4 @@ void push_table_name(Pile ** labelTable, char* name);
 void add_address_to_label(Pile ** labelTable, char* name, int addr);
 int seek_address_by_name(Pile ** labelTable, char * name);
 
-#endif LABEL_TABLE_H
+#endif // LABEL_TABLE_H

@@ -1,10 +1,7 @@
+#include <stdlib.h>
+#include <stdio.h>
 #include "pile.h"
 
-typedef struct
-{
-	void * data;
-	Pile * prec;
-} Pile;
 
 //pile_pop
 void * pile_pop(Pile ** p_pile)
@@ -18,6 +15,7 @@ void * pile_pop(Pile ** p_pile)
 		*p_pile = NULL;
 		*p_pile = tmp;
 	}
+	//printf("%d\n", (*p_pile)->prec);
 	return ret;
 }
 

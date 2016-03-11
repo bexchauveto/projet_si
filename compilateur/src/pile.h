@@ -11,4 +11,4 @@ typedef struct pile
 void * pile_pop(Pile ** p_pile);
 void pile_push(Pile ** p_pile, void * data);
 
-#endif PILE_H
+#endif // PILE_H
