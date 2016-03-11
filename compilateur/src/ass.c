@@ -78,16 +78,16 @@ void ass_fctBegin(char* fctName)
 {
 	// TODO enregistrer les parametres dans la table des symboles
 	// TODO poser un label de fonction
-	empiler(ADDR_CONTEXT);
-	fprintf(file, "5 %d %d\n", ADDR_CONTEXT, ADDR_SP);
+	empiler(ADDR_CONTEXT); // sauver le contexte
+	fprintf(file, "5 %d %d\n", ADDR_CONTEXT, ADDR_SP); // CONTEXT = SP
 }
 
 void ass_fctEnd()
 {
-	empiler(ADDR_CONTEXT); // sauver le contexte
-	fprintf(file, "5 %d %d\n", ADDR_CONTEXT, ADDR_SP); // CONTEXT = SP
+	fprintf(file, "5 %d %d\n", ADDR_SP, ADDR_CONTEXT);
+	depiler(ADDR_CONTEXT);
 	// sauter a l'addresse de retour.
-	fprintf(file, "D %d %d\n", ADDR_R1, ADDR_SP); // *addr = *SP
+	fprintf(file, "D %d %d\n", ADDR_R1, ADDR_SP); // R1 = *SP
 	fprintf(file, "F %d\n", ADDR_R1); // goto R2
 }
 
@@ -101,11 +101,10 @@ void ass_blocEnd()
 	// TODO maj de la table des symboles
 }
 
-void ass_declVar(char* varName, int value)
+void ass_declVar(char* varName)
 {
 	// TODO enregistrer dans la table des symboles (à l'addresse SP)
-	fprintf(file, "6 %d %d\n", ADDR_R1, value); // *varName = value
-	empiler(ADDR_R1);
+	empiler(ADDR_R0); // empiler varName
 }
 
 void ass_ldr(char* varName, int reg)
@@ -157,24 +156,18 @@ void ass_div()
 
 void ass_and()
 {
-	// TODO
-	fprintf(file, "8 %d %d\n", ADDR_R0, x); // if(!R0)  goto false;
-	fprintf(file, "8 %d %d\n", ADDR_R1, x); // if(!R1)  goto false;
-	fprintf(file, "6 %d %d\n", ADDR_R0, 1); // R0 = 1
-	fprintf(file, "7 %d\n", x);             // goto end;
-	fprintf(file, "6 %d %d\n", ADDR_R0, 0); // false: R0 = 0
+	fprintf(file, "8 %d %d\n", ADDR_R0, instructionNumber+3); // if(!R0)  goto false;
+	fprintf(file, "8 %d %d\n", ADDR_R1, instructionNumber+2); // if(!R1)  goto false;
+	fprintf(file, "7 %d\n", instructionNumber+2);             // true:  goto end;
+	fprintf(file, "6 %d %d\n", ADDR_R0, 0);                   // false: R0 = 0
 }
 
 void ass_or()
 {
-	// TODO
-	fprintf(file, "8 %d %d\n", ADDR_R0, x); // if(!R0)  goto testR1;
-	fprintf(file, "6 %d %d\n", ADDR_R0, 1); // R0 = 1
-	fprintf(file, "7 %d\n", x);             // goto end;
-	fprintf(file, "8 %d %d\n", ADDR_R0, x); // if(!R1)  goto false;
-	fprintf(file, "6 %d %d\n", ADDR_R0, 1); // R0 = 1
-	fprintf(file, "7 %d\n", x);             // goto end;
-	fprintf(file, "6 %d %d\n", ADDR_R0, 0); // false: R0 = 0
+	fprintf(file, "8 %d %d\n", ADDR_R0, instructionNumber+2); // if(!R0)  goto testR1;
+	fprintf(file, "7 %d\n", instructionNumber+3);             // goto end;
+	fprintf(file, "8 %d %d\n", ADDR_R0, instructionNumber+2); // if(!R1)  goto end;
+	fprintf(file, "6 %d %d\n", ADDR_R0, 1);                   // R0 = 1
 }
 
 void ass_inf()
@@ -199,9 +192,15 @@ void ass_fctCallParam()
 
 void ass_fctCallJmp(char* fctName)
 {
-	// TODO sauver l'adresse de retour
+	fprintf(file, "10 %d\n", ADDR_R1);
 	empiler(ADDR_R1);
 	fprintf(file, "7 .%s\n", fctName);
+}
+
+void ass_fctCallEnd()
+{
+	depiler(ADDR_R1); // depiler adresse de retour
+	// TODO depîler les parametres
 }
 
 void ass_ifBegin()

@@ -45,6 +45,7 @@ int Ipri(Instruction* ins);
 int Icopa(Instruction* ins);
 int Icopb(Instruction* ins);
 int Ijmp2(Instruction* ins);
+int Isip(Instruction* ins);
 // divers
 void afficheData(int indice, int nb);
 void afficheInst(int indice, int nb);
@@ -53,22 +54,23 @@ void afficheInst(int indice, int nb);
 
 const int tabInstInfoSize = 16;
 InstInfo tabInstInfo[] = {
-	{ 0, Ierror },
-	{ 3, Iadd },
-	{ 3, Imul },
-	{ 3, Isub },
-	{ 3, Idiv },
-	{ 2, Icop },
-	{ 2, Iafc },
-	{ 1, Ijmp },
-	{ 2, Ijmf },
-	{ 3, Iinf },
-	{ 3, Isup },
-	{ 3, Iequ },
-	{ 1, Ipri },
-	{ 2, Icopa},
-	{ 2, Icopb},
-	{ 1, Ijmp2}
+	{ 0, Ierror },// no instruction
+	{ 3, Iadd },  // ADD(1) : addition
+	{ 3, Imul },  // MUL(2) : multiplication
+	{ 3, Isub },  // SUB(3) : soustraction
+	{ 3, Idiv },  // DIV(4) : division
+	{ 2, Icop },  // COP(5) : affectation, copie
+	{ 2, Iafc },  // AFC(6) : affectation constante
+	{ 1, Ijmp },  // JMP(7) : jump, adresse fixe
+	{ 2, Ijmf },  // JMF(8) : jump if
+	{ 3, Iinf },  // INF(9) : inferieur
+	{ 3, Isup },  // SUP(A) : superieur
+	{ 3, Iequ },  // EQU(B) : egalite
+	{ 1, Ipri },  // PRI(C) : print
+	{ 2, Icopa},  // COPA(D): affectation pointeur (a=*b)
+	{ 2, Icopb},  // COPB(E): affectation pointeur (*a=b)
+	{ 1, Ijmp2},  // JMP2(F): jump, adresse en memoire
+	{ 1, Isip }   // SPC(10): save IP(PC)
 };
 
 
@@ -338,6 +340,14 @@ int Ijmp2(Instruction* ins)
 	if(!testData(ins,0))
 		return -1;
 	R_IP = val(ins,0);
+	return 0;
+}
+
+int Isip(Instruction* ins)
+{
+	if(!testData(ins,0))
+		return -1;
+	*p_val(ins,0) = R_IP;
 	return 0;
 }
 
