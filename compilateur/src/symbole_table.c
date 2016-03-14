@@ -7,26 +7,30 @@
 
 
 
-int numBloc = 0;
-Pile * symboleTable;
+int numBloc = 0; // The number of blocs in the stack
+Pile * symboleTable; // The stck
 
-
+/*
+ * Function that create the stack
+ */
 void create_table()
 {
 	//printf("function create_table\n");
 	symboleTable = malloc(sizeof *symboleTable);
 }
 
-//Nouveau bloc numbloc++;
-
+/*
+ * Function that create a new bloc in the stack
+ */
 void new_bloc()
 {
 	//printf("function new_bloc\n");
 	numBloc++;
 }
 
-//Bloc fini numbloc--;
-
+/*
+ * Function that end a block a pop items for the current bloc and then decrease the numBloc
+ */
 void end_bloc()
 {
 	//printf("function end_bloc\n");
@@ -47,8 +51,9 @@ void end_bloc()
 	numBloc--;
 }
 
-//Push une variable dans la table
-
+/*
+ * Function that push into the stack a new entry composed by a name, a address and a bloc number
+ */
 void push_table(char * name, int addr)
 {
 	//printf("function push_table\n");
@@ -59,15 +64,18 @@ void push_table(char * name, int addr)
 	pile_push(&symboleTable, (void *) data);
 }
 
-//Pop une variable dans la table
+/*
+ * Function that pop a item from the stack and return it
+ */
 symboleStruct * pop_table()
 {
 	//printf("function pop_table\n");
 	return (symboleStruct *)(pile_pop(&symboleTable));
 }
 
-//rechercher une adresse à partir d'un nom
-
+/*
+ * Function that seek an address by a name of a symbol
+ */
 int seek_address_by_name(char * name)
 {
 	//printf("function seek_address_by_name\n");
@@ -81,13 +89,16 @@ int seek_address_by_name(char * name)
 			ret = ((symboleStruct * )(tmp->data))->adresseExec;
 			notFound = 0;
 		}
-		else {
+		else 
+		{
 			tmp = tmp->prec;
 		}
 	}
 	return ret;
 }
-
+/*
+ * Test function
+ */
 /*int main(int argc, char const *argv[])
 {
 	create_table();
