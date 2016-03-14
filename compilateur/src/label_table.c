@@ -24,7 +24,7 @@ void push_table_complet(char* name, int addr)
 {
 	//printf("function push_table_complet\n");
 	labelStruct * data = malloc(sizeof *data);
-	data->varName = name;
+	data->varName = strdup(name);
 	data->adresseExec = addr;
 	pile_push(&labelTable, (void *)data);
 }
@@ -36,7 +36,7 @@ void push_table_name(char* name)
 {
 	//printf("function push_table_name\n");
 	labelStruct * data = malloc(sizeof *data);
-	data->varName = name;
+	data->varName = strdup(name);
 	data->adresseExec = -1;
 	pile_push(&labelTable, (void*)data);
 }

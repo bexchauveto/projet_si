@@ -22,20 +22,42 @@ Pile * functionTable; // The stack
  */
 void createTable()
 {
-	//printf("function_table\n");
+	printf("function_table\n");
 	functionTable = malloc(sizeof *functionTable);
 }
 
 /*
- * Function that add to the function table a new entry composed by a name and a number of parameters
+ * Function that add to the function table a new entry composed by a name
  */
-void add_function_to_table(char * nameFunction, int nbParams)
+void add_function_to_table(char * nameFunction)
 {
-	//printf("function add_function_to_table\n");
+	printf("function add_function_to_table\n");
 	structFunction * data = malloc(sizeof *data);
-	data->nameFun = nameFunction;
-	data->nbParams = nbParams;
+	data->nameFun = strdup(nameFunction);
 	pile_push(&functionTable, (void*) data);
+}
+
+/*
+ * Function that add a parameter to a function
+ */
+void add_param_to_function(char * nameFunction, char * nameParam)
+{
+	printf("function add_param_to_function\n");
+	int notFound = 1;
+	Pile * tmp = functionTable;
+	while(tmp->prec != NULL && notFound)
+	{
+		if(strcmp(((structFunction * )(tmp->data))->nameFun, nameFunction) == 0)
+		{
+			((structFunction *)(tmp->data))->nameParams[((structFunction *)(tmp->data))->nbParams] = strdup(nameParam);
+			((structFunction *)(tmp->data))->nbParams = ((structFunction *)(tmp->data))->nbParams + 1;
+			notFound = 0;
+		}
+		else
+		{
+			tmp = tmp->prec;
+		}
+	}
 }
 
 /*
@@ -46,12 +68,13 @@ void add_function_to_table(char * nameFunction, int nbParams)
  */
 int check_nbParams_by_nameFun(char * nameFunction, int nbParams)
 {
-	//printf("function check_nbParams_by_nameFun\n");
+	printf("function check_nbParams_by_nameFun\n");
 	int ret = -2;
 	int notFound = 1;
 	Pile * tmp = functionTable;
 	while(tmp->prec != NULL && notFound)
 	{
+		printf("%s\n", ((structFunction * )(tmp->data))->nameFun);
 		if(strcmp(((structFunction * )(tmp->data))->nameFun, nameFunction) == 0)
 		{
 			if (((structFunction * )(tmp->data))->nbParams == nbParams)
@@ -76,18 +99,23 @@ int check_nbParams_by_nameFun(char * nameFunction, int nbParams)
  * Test funtion
  */
 
-/*int main(int argc, char const *argv[])
+int main(int argc, char const *argv[])
 {
 	createTable();
-	add_function_to_table("fun1", 2);
-	add_function_to_table("fun2", 3);
-	add_function_to_table("fun3", 1);
-	add_function_to_table("fun4", 0);
-	int i = check_nbParams_by_nameFun("fun1", 2);
-	int j = check_nbParams_by_nameFun("fun2", 3);
+	add_function_to_table("fun1");
+	add_param_to_function("fun1", "param1_1");
+	add_param_to_function("fun1", "param1_2");
+	add_param_to_function("fun1", "param1_3");
+	//add_param_to_function("fun1", "param1_4");
+	add_function_to_table("fun2");
+	add_param_to_function("fun2", "param2_1");
+	add_function_to_table("fun3");
+	add_function_to_table("fun4");
+	int i = check_nbParams_by_nameFun("fun1", 3);
+	int j = check_nbParams_by_nameFun("fun2", 1);
 	int k = check_nbParams_by_nameFun("fun3", 0);
 	int l = check_nbParams_by_nameFun("fun4", 1);
 	int m = check_nbParams_by_nameFun("fun5", 28);
 	printf("%d, %d, %d, %d, %d\n", i,j,k,l,m);
 	return 0;
-}*/
+}

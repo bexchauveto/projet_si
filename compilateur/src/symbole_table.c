@@ -58,7 +58,7 @@ void push_table(char * name, int addr)
 {
 	//printf("function push_table\n");
 	symboleStruct * data = malloc (sizeof *data);
-	data->varName = name;
+	data->varName = strdup(name);
 	data->adresseExec = addr;
 	data->courantBloc = numBloc;
 	pile_push(&symboleTable, (void *) data);
