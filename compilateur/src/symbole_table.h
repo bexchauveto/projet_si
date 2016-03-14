@@ -8,6 +8,7 @@ typedef struct
 	int adresseExec;
 	int courantBloc;
 } symboleStruct;
+
 void create_table();
 void new_bloc();
 void end_bloc();

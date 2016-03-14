@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "symbole_table.h"
 #include "pile.h"
 
@@ -32,7 +33,7 @@ void end_bloc()
 	int notFinish = 1;
 	while(symboleTable->prec != NULL && notFinish)
 	{
-		printf("%d\n", symboleTable != NULL);
+		//printf("%d\n", symboleTable != NULL);
 		//printf("%d, %d\n", ((symboleStruct * )(symboleTable->data))->courantBloc, numBloc);
 		if(((symboleStruct * )(symboleTable->data))->courantBloc == numBloc)
 		{
@@ -75,7 +76,7 @@ int seek_address_by_name(char * name)
 	Pile * tmp = symboleTable;
 	while (tmp->prec != NULL && notFound)
 	{
-		if(((symboleStruct * )(tmp->data))->varName == name)
+		if(strcmp(((symboleStruct * )(tmp->data))->varName, name) == 0)
 		{
 			ret = ((symboleStruct * )(tmp->data))->adresseExec;
 			notFound = 0;
