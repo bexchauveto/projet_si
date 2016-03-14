@@ -71,7 +71,7 @@ TODO:
 Prg :
 	  Fct Prg
 	  		{ st_root($1, $2); }
-	| 		{ $$=ST_UNDEFINED; };
+	| 		{ ST_UNDEFINED; };
 
 /* ---- DEFINITION DES FONCTIONS ---- */
 Fct : 

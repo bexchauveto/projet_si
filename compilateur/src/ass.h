@@ -15,7 +15,7 @@ void ass_fctEnd();
 void ass_blocBegin();
 void ass_blocEnd();
 void ass_declVar(char* varName);
-void ass_ldr(char* varName);
+void ass_ldr(char* varName, int reg);
 void ass_str(char* varName);
 void ass_ld(int value, int reg);
 void ass_pushResult();

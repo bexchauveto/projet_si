@@ -1,6 +1,7 @@
-#include <stdlib.h>
-
 #include "st.h"
+
+#include <stdlib.h>
+#include "ass.h"
 
 
 
@@ -9,7 +10,7 @@
 //###################################################
 
 typedef enum {
-	NT_ROOT,
+	NT_ROOT = 1,
 	NT_FUNCTION,
 	NT_PROTOTYPE,
 	NT_PARAMS,
@@ -71,15 +72,16 @@ typedef struct {
 	int flags;
 } LeafType;
 
+#define NB_CHILDREN_MAX 3
 typedef struct {
 	AbstractNode _;
-	st_Node_t children[3];
+	st_Node_t children[NB_CHILDREN_MAX];
 } Node;
 
 
 
 
-st_Node_t treeRoot = 0;
+st_Node_t treeRoot = ST_UNDEFINED;
 
 
 
@@ -111,7 +113,8 @@ NodeType getNodeType(st_Node_t handler)
 st_Node_t createNode(NodeType type, st_Node_t* children)
 {
 	Node* node = malloc(sizeof(Node));
-	for(int i=0; i<3; i++)
+	if(!node) return node;
+	for(int i=0; i<NB_CHILDREN_MAX; i++)
 		node->children[i] = children[i];
 	return createAN(type, node);
 }
@@ -119,8 +122,32 @@ st_Node_t createNode(NodeType type, st_Node_t* children)
 void freeNode(st_Node_t handler)
 {
 	Node* node = (Node*) handler;
-	for(int i=0; i<3; i++)
-		free(node->children[i]);
+	free(node);
+}
+
+void freeNodeAll(st_Node_t handler)
+{
+	Node* node = (Node*) handler;
+	for(int i=0; i<NB_CHILDREN_MAX; i++)
+	{
+		if(!node->children[i])
+			continue;
+		switch(getNodeType(node->children[i]))
+		{
+			case NT_EXNB:
+				freeNb(node->children[i]);
+				break;
+			case NT_TYPE:
+				freeType(node->children[i]);
+				break;
+			case NT_ID:
+				freeID(node->children[i]);
+				break;
+			default:
+				freeNodeAll(node->children[i]);
+				break;
+		}
+	}
 	free(node);
 }
 
@@ -128,6 +155,7 @@ void freeNode(st_Node_t handler)
 st_Node_t createNb(int value)
 {
 	LeafNb* node = malloc(sizeof(LeafNb));
+	if(!node) return node;
 	node->value = value;
 	return createAN(NT_EXNB, node);
 }
@@ -142,6 +170,7 @@ void freeNb(st_Node_t handler)
 st_Node_t createType(int type, int flags)
 {
 	LeafType* node = malloc(sizeof(LeafType));
+	if(!node) return node;
 	node->type = type;
 	node->flags = flags;
 	return createAN(NT_TYPE, node);
@@ -157,6 +186,7 @@ void freeType(st_Node_t handler)
 st_Node_t createID(char* id)
 {
 	LeafID* node = malloc(sizeof(LeafID));
+	if(!node) return node;
 	node->id = id;
 	return createAN(NT_ID, node);
 }
@@ -172,12 +202,167 @@ void freeID(st_Node_t handler)
 
 
 //###################################################
-//  DEFINITION DES FONCTIONS
+//  LECTURE DE L'ARBRE
 //###################################################
 
-void st_compute()
+int st_computeFunction(st_Node_t node) // et prototype
 {
+	int error = 0;
+	Node* father = (Node*) node;
+	Node* prototype = (Node*) father->children[0];
+	Node* corp = (Node*) father->children[1];
 	
+	// --- begin function
+	ass_fctBegin(functionName);
+	
+	// --- Compute prototype
+	// ignore le type
+	// nom de la fonction
+	LeafID* idFct = (LeafID*) prototype->children[1];
+	char* functionName = idFct->id;
+	// TODO enregistrer dans la table des fonctions
+	// parametres
+	int nbParams = 0;
+	Node* params = (Node*) prototype->children[2];
+	while(params != ST_UNDEFINED)
+	{
+		// --- Compute param
+		nbParams++;
+		Node* param = (Node*) params->children[0];
+		LeafID* idParam = (LeafID*) param->children[1];
+		char* paramName = idParam->id;
+		// TODO gerer la table des symboles
+		
+		params = (Node*) params->children[1];
+	}
+	freeNodeAll(prototype);
+	
+	// --- Compute corp
+	error = st_compute(corp);
+	if(error) return error;
+	
+	// --- end function
+	ass_fctEnd();
+	
+	return 0;
+}
+
+int st_computeBloc(st_Node_t node) // et assimiles
+{
+	int error = 0;
+	Node* father = (Node*) node;
+	Node* head  = (Node*) father->children[0];
+	Node* belly = (Node*) father->children[1];
+	Node* foot  = (Node*) father->children[2];
+	
+	// --- Compute head
+	for(Node* inst = head; inst != ST_UNDEFINED;)
+	{
+		st_compute(inst->children[0]); // declVar
+		inst = (Node*) inst->children[1];
+	}
+	
+	// --- Compute belly
+	for(Node* inst = belly; inst != ST_UNDEFINED;)
+	{
+		st_compute(inst->children[0]); // Instruction
+		inst = (Node*) inst->children[1];
+	}
+	
+	// --- Compute foot
+	if(foot != ST_UNDEFINED)
+	{
+		st_compute(foot); // return
+	}
+	
+	return 0;
+}
+
+
+
+
+
+int st_compute(st_Node_t node)
+{
+	if(node == ST_UNDEFINED)
+	{
+		if(treeRoot == ST_UNDEFINED)
+			return -1; // error
+		node = treeRoot;
+	}
+	
+	int error;
+	switch(getNodeType(node))
+	{
+		case NT_ROOT:
+			for(Node* inst = belly; inst != ST_UNDEFINED;)
+			{
+				st_compute(inst->children[0]); // function
+				inst = (Node*) inst->children[1];
+			}
+			freeNode(node);
+			break;
+		case NT_FUNCTION:
+			error = st_computeFunction(node);
+			freeNode(node);
+			break;
+		case NT_BLOC:
+			error = st_computeBloc(node);
+			freeNode(node);
+			break;
+		case NT_DECLVAR:
+			break;
+		case NT_DECLVAR2:
+			break;
+		case NT_DECLVARVAR:
+			break;
+		case NT_EXADD:
+			break;
+		case NT_EXSUB:
+			break;
+		case NT_EXMUL:
+			break;
+		case NT_EXDIV:
+			break;
+		case NT_EXOR:
+			break;
+		case NT_EXAND:
+			break;
+		case NT_EXINF:
+			break;
+		case NT_EXINFEQ:
+			break;
+		case NT_EXSUP:
+			break;
+		case NT_EXSUPEQ:
+			break;
+		case NT_EXDIFF:
+			break;
+		case NT_EXEQU:
+			break;
+		case NT_EXAFFECT:
+			break;
+		case NT_FCTCALL:
+			break;
+		case NT_CALLPARAMS:
+			break;
+		case NT_WHILE:
+			break;
+		case NT_IF:
+			break;
+		case NT_RETURN:
+			break;
+		case NT_TYPE:
+			break;
+		case NT_ID:
+			break;
+		case NT_EXNB:
+			break;
+		default:
+			break;
+	}
+	
+	return error;
 }
 
 
@@ -185,6 +370,9 @@ void st_compute()
 
 
 
+//###################################################
+//  CONSTRUCTION DE L'ARBRE
+//###################################################
 
 /* --- Noeuds --- */
 void st_root(st_Node_t node, st_Node_t next)

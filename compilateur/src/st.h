@@ -56,7 +56,7 @@ st_Node_t st_exNb(int value);
 
 /* LECTURE */
 // lit l'arbre syntaxique et le compile
-void st_compute();
+int st_compute(st_Node_t node);
 
 
 
