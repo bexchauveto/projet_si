@@ -165,17 +165,17 @@ Expr :
 			{ $$ = st_exOr($1, $3); }
 	| Expr tAND Expr
 			{ $$ = st_exAnd($1, $3); }
-	|Expr tSUP Expr
+	| Expr tSUP Expr
 			{ $$ = st_exSup($1, $3); }
-	|Expr tINF Expr
+	| Expr tINF Expr
 			{ $$ = st_exInf($1, $3); }
-	|Expr tSUPEQ Expr
+	| Expr tSUPEQ Expr
 			{ $$ = st_exSupEq($1, $3); }
-	|Expr tINFEQ Expr
+	| Expr tINFEQ Expr
 			{ $$ = st_exInfEq($1, $3); }
-	|Expr tDIFF Expr
+	| Expr tDIFF Expr
 			{ $$ = st_exDiff($1, $3); }
-	|Expr tEQU Expr
+	| Expr tEQU Expr
 			{ $$ = st_exEqu($1, $3); }
 	| tID tEQ Expr
 	  		{
