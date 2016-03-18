@@ -21,6 +21,7 @@ EXP		[0-9]+[eE][+-]?[0-9]+
 "*"		return tMUL;
 "/"		return tDIV;
 "="		return tEQ;
+"!"		return tNOT;
 ","		return tVIR;
 ";"		return tPTVIR;
 " "		;
@@ -41,7 +42,8 @@ EXP		[0-9]+[eE][+-]?[0-9]+
 "if"	return tIF;
 "while"	return tWHILE;
 {TEXT}	{
-			yylval.string = strdup(yytext);
+			char* p = malloc(strlen(yytext)+1);
+			yylval.string = p? strcpy(p,yytext) : 0;
 			return tID;
 		}
 {NB}	{

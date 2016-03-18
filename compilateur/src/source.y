@@ -15,7 +15,7 @@ int yyerror(char *s);
 
 
 /* ---- DEFINITIONS TOKENS ---- */
-%token tPO tPF tAO tAF tPLUS tMOINS tMUL tDIV tEQ tVIR tINT tCONST tPRINT tRETURN tPTVIR tIF tWHILE tOR tAND tINF tSUP tSUPEQ tINFEQ tEQU tDIFF
+%token tPO tPF tAO tAF tPLUS tMOINS tMUL tDIV tEQ tVIR tINT tCONST tPRINT tRETURN tPTVIR tIF tWHILE tOR tAND tINF tSUP tSUPEQ tINFEQ tEQU tDIFF tNOT
 
 %union 
 {
@@ -55,8 +55,9 @@ int yyerror(char *s);
 
 TODO:
 - mot clé const
-- opperateurs > < >= <= != == (vérifier que ça fasse pas trop merder à l'éxec)
 - affectation lors de la declaration
+- return n'importe ou
+- affectation n'importe ou
 
 */
 
@@ -165,6 +166,8 @@ Expr :
 			{ $$ = st_exOr($1, $3); }
 	| Expr tAND Expr
 			{ $$ = st_exAnd($1, $3); }
+	| tNOT Expr
+			{ $$ = st_exNot($2);}
 	| Expr tSUP Expr
 			{ $$ = st_exSup($1, $3); }
 	| Expr tINF Expr

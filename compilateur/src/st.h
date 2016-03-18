@@ -31,6 +31,7 @@ st_Node_t st_exMul(st_Node_t exp1, st_Node_t exp2);
 st_Node_t st_exDiv(st_Node_t exp1, st_Node_t exp2);
 st_Node_t st_exOr(st_Node_t exp1, st_Node_t exp2);
 st_Node_t st_exAnd(st_Node_t exp1, st_Node_t exp2);
+st_Node_t st_exNot(st_Node_t exp);
 st_Node_t st_exInf(st_Node_t exp1, st_Node_t exp2);
 st_Node_t st_exInfEq(st_Node_t exp1, st_Node_t exp2);
 st_Node_t st_exSup(st_Node_t exp1, st_Node_t exp2);
@@ -56,7 +57,7 @@ st_Node_t st_exNb(int value);
 
 /* LECTURE */
 // lit l'arbre syntaxique et le compile
-int st_compute(st_Node_t node);
+void st_compute(st_Node_t node);
 
 
 

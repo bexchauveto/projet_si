@@ -46,6 +46,7 @@ int Icopa(Instruction* ins);
 int Icopb(Instruction* ins);
 int Ijmp2(Instruction* ins);
 int Isip(Instruction* ins);
+int Inot(Instruction* ins);
 // divers
 void afficheData(int indice, int nb);
 void afficheInst(int indice, int nb);
@@ -70,7 +71,8 @@ InstInfo tabInstInfo[] = {
 	{ 2, Icopa},  // COPA(D): affectation pointeur (a=*b)
 	{ 2, Icopb},  // COPB(E): affectation pointeur (*a=b)
 	{ 1, Ijmp2},  // JMP2(F): jump, adresse en memoire
-	{ 1, Isip }   // SPC(10): save IP(PC)
+	{ 1, Isip },  // SPC(10): save IP(PC)
+	{ 2, Inot }   // NOT(11): negation logique
 };
 
 
@@ -348,6 +350,14 @@ int Isip(Instruction* ins)
 	if(!testData(ins,0))
 		return -1;
 	*p_val(ins,0) = R_IP;
+	return 0;
+}
+
+int Inot(Instruction* ins)
+{
+	if(!testData(ins,0) || !testData(ins,1))
+		return -1;
+	*p_val(ins,0) = ! val(ins,1);
 	return 0;
 }
 

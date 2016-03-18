@@ -6,6 +6,19 @@
 
 
 
+//Structure de la table des symboles
+typedef struct
+{
+	char * varName;
+	int adresseExec;
+	int courantBloc;
+} SymboleStruct;
+
+
+
+
+
+
 
 int numBloc = 0; // The number of blocs in the stack
 Pile * symboleTable; // The stck
@@ -13,7 +26,7 @@ Pile * symboleTable; // The stck
 /*
  * Function that create the stack
  */
-void create_table()
+void symboleT_createTable()
 {
 	//printf("function create_table\n");
 	symboleTable = malloc(sizeof *symboleTable);
@@ -22,31 +35,26 @@ void create_table()
 /*
  * Function that create a new bloc in the stack
  */
-void new_bloc()
+void symboleT_newBloc()
 {
-	//printf("function new_bloc\n");
+	//printf("function newBloc\n");
 	numBloc++;
 }
 
 /*
  * Function that end a block a pop items for the current bloc and then decrease the numBloc
  */
-void end_bloc()
+void symboleT_endBloc()
 {
-	//printf("function end_bloc\n");
-	int notFinish = 1;
-	while(symboleTable->prec != NULL && notFinish)
+	//printf("function endBloc\n");
+	while(symboleTable->prec != NULL)
 	{
+		SymboleStruct * element = (SymboleStruct *) (symboleTable->data);
 		//printf("%d\n", symboleTable != NULL);
-		//printf("%d, %d\n", ((symboleStruct * )(symboleTable->data))->courantBloc, numBloc);
-		if(((symboleStruct * )(symboleTable->data))->courantBloc == numBloc)
-		{
-			pop_table(&symboleTable);
-		}
-		else
-		{
-			notFinish = 0;
-		}
+		//printf("%d, %d\n", element->courantBloc, numBloc);
+		if(element->courantBloc != numBloc)
+			break;
+		symboleT_popTable();
 	}
 	numBloc--;
 }
@@ -54,11 +62,12 @@ void end_bloc()
 /*
  * Function that push into the stack a new entry composed by a name, a address and a bloc number
  */
-void push_table(char * name, int addr)
+void symboleT_pushTable(char * name, int addr)
 {
 	//printf("function push_table\n");
-	symboleStruct * data = malloc (sizeof *data);
-	data->varName = strdup(name);
+	SymboleStruct * data = malloc (sizeof *data);
+	char* p = malloc(strlen(name)+1);
+	data->varName = p? strcpy(p,name) : 0;
 	data->adresseExec = addr;
 	data->courantBloc = numBloc;
 	pile_push(&symboleTable, (void *) data);
@@ -67,56 +76,52 @@ void push_table(char * name, int addr)
 /*
  * Function that pop a item from the stack and return it
  */
-symboleStruct * pop_table()
+void symboleT_popTable()
 {
 	//printf("function pop_table\n");
-	return (symboleStruct *)(pile_pop(&symboleTable));
+	SymboleStruct* e = (SymboleStruct *)(pile_pop(&symboleTable));
+	free(e->varName);
+	free(e);
 }
 
 /*
  * Function that seek an address by a name of a symbol
  */
-int seek_address_by_name(char * name)
+int symboleT_seekAddressByName(char * name)
 {
 	//printf("function seek_address_by_name\n");
-	int ret = -1;
-	int notFound = 1;
-	Pile * tmp = symboleTable;
-	while (tmp->prec != NULL && notFound)
+	for (Pile * tmp = symboleTable; tmp->prec != NULL; tmp = tmp->prec)
 	{
-		if(strcmp(((symboleStruct * )(tmp->data))->varName, name) == 0)
-		{
-			ret = ((symboleStruct * )(tmp->data))->adresseExec;
-			notFound = 0;
-		}
-		else 
-		{
-			tmp = tmp->prec;
-		}
+		SymboleStruct * element = (SymboleStruct *) (tmp->data);
+		if(strcmp(element->varName, name) == 0)
+			return element->adresseExec;
 	}
-	return ret;
+	return -1;
 }
+
+
 /*
  * Test function
  */
-/*int main(int argc, char const *argv[])
+/*
+int main(int argc, char const *argv[])
 {
-	create_table();
-	new_bloc();
-	push_table("sym1", 16);
-	push_table("sym2", 24);
-	push_table("sym3", 32);
-	push_table("sym4", 42);
-	new_bloc();
-	push_table("sym5", 58);
-	push_table("sym6", 64);
-	push_table("sym7", 78);
-	end_bloc();
-	symboleStruct * sym = pop_table();
+	symboleT_createTable();
+	symboleT_newBloc();
+	symboleT_pushTable("sym1", 16);
+	symboleT_pushTable("sym2", 24);
+	symboleT_pushTable("sym3", 32);
+	symboleT_pushTable("sym4", 42);
+	symboleT_newBloc();
+	symboleT_pushTable("sym5", 58);
+	symboleT_pushTable("sym6", 64);
+	symboleT_pushTable("sym7", 78);
+	symboleT_endBloc();
+	symboleT_popTable();
 	printf("avant printf\n");
 	printf("name : %s, addr : %d, bloc : %d\n", sym->varName, sym->adresseExec, sym->courantBloc);
 	int i = seek_address_by_name("sym28");
 	printf("%d\n", i);
-	end_bloc();
+	symboleT_endBloc();
 	return 0;
 }*/

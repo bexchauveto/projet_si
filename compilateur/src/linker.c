@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 
 /*
  * Return the file opened

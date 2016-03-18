@@ -29,7 +29,6 @@ auto/%.o: $(SRC_LY) src/st.h
 	$(MAKE) -C auto/ $($@:auto/%=%)
 
 obj/%.o: src/%.c
-	echo $(OBJ)
 	gcc -MM $< -MF dep/$*.d -MT $@
 	gcc -c $< $(CFLAGS) -o $@
 

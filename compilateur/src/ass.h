@@ -29,6 +29,7 @@ void ass_or();
 void ass_inf();
 void ass_sup();
 void ass_equ();
+void ass_not();
 void ass_fctCallParam();
 void ass_fctCallJmp(char* fctName);
 void ass_ifBegin();

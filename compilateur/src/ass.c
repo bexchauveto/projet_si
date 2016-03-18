@@ -110,13 +110,13 @@ void ass_declVar(char* varName)
 void ass_ldr(char* varName, int reg)
 {
 	// TODO rechercher varName dans la table des symboles
-	fprintf(file, "5 %d %d\n", ADDR_R0 + reg, x);
+	//fprintf(file, "5 %d %d\n", ADDR_R0 + reg, x);
 }
 
 void ass_str(char* varName)
 {
 	// TODO rechercher varName dans la table des symboles
-	fprintf(file, "5 %d %d\n", x, ADDR_R0);
+	//fprintf(file, "5 %d %d\n", x, ADDR_R0);
 }
 
 void ass_ld(int value, int reg)
@@ -185,6 +185,11 @@ void ass_equ()
 	fprintf(file, "B %d %d %d\n", ADDR_R0, ADDR_R0, ADDR_R1);
 }
 
+void ass_not()
+{
+	fprintf(file, "11 %d %d\n", ADDR_R0, ADDR_R0);
+}
+
 void ass_fctCallParam()
 {
 	empiler(ADDR_R0);
@@ -210,7 +215,7 @@ void ass_ifBegin()
 void ass_ifThen()
 {
 	// TODO enregistrer la fin du if dans la table des labels
-	fprintf(file, "jmf %d .%s", ADDR_R0, x);
+	//fprintf(file, "jmf %d .%s", ADDR_R0, x);
 }
 
 void ass_ifEnd()
@@ -226,13 +231,13 @@ void ass_whileBegin()
 void ass_whileDo()
 {
 	// TODO enregistrer la fin du while dans la table des labels
-	fprintf(file, "8 %d .%s", ADDR_R0, x); // if(!R0) goto whileEnd
+	//fprintf(file, "8 %d .%s", ADDR_R0, x); // if(!R0) goto whileEnd
 }
 
 void ass_whileEnd()
 {
 	// TODO trouver le nom du label
-	fprintf(file, "7 .%s", x); // goto whileBegin
+	//fprintf(file, "7 .%s", x); // goto whileBegin
 	// TODO poser un label
 }
 
