@@ -5,7 +5,8 @@
 void funT_createTable();
 void funT_addFunctionToTable(char * functionName);
 void funT_addParamToFunction(char * functionName, char * paramName);
-int funT_checkNbParamsByFunName(char * functionName, int nbParams);
+char** funT_getParamsByFunName(char * functionName);
+int funT_getNbParamsByFunName(char * functionName);
 
 
 #endif // FUNCTION_TABLE_H

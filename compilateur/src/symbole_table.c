@@ -19,7 +19,7 @@ typedef struct
 
 
 
-
+int numSymbole = 0; // The number of symbols in the stack
 int numBloc = 0; // The number of blocs in the stack
 Pile * symboleTable; // The stck
 
@@ -52,7 +52,7 @@ void symboleT_endBloc()
 		SymboleStruct * element = (SymboleStruct *) (symboleTable->data);
 		//printf("%d\n", symboleTable != NULL);
 		//printf("%d, %d\n", element->courantBloc, numBloc);
-		if(element->courantBloc != numBloc)
+		if(element->courantBloc < numBloc)
 			break;
 		symboleT_popTable();
 	}
@@ -71,6 +71,7 @@ void symboleT_pushTable(char * name, int addr)
 	data->adresseExec = addr;
 	data->courantBloc = numBloc;
 	pile_push(&symboleTable, (void *) data);
+	numSymbole++;
 }
 
 /*
@@ -85,7 +86,16 @@ void symboleT_popTable()
 }
 
 /*
+ * Function that return the number of symbols pushed in the table
+ */
+int symboleT_getSymboleNumber()
+{
+	return numSymbole;
+}
+
+/*
  * Function that seek an address by a name of a symbol
+ * return -1 if not found
  */
 int symboleT_seekAddressByName(char * name)
 {

@@ -4,13 +4,13 @@
 #include <stdio.h>
 
 
-void setFile(FILE* outputFile);
+void ass_setFile(FILE* outputFile);
 
 
 
 void ass_progBegin();
 void ass_progEnd();
-void ass_fctBegin(char* fctName);
+void ass_fctBegin(char* fctName, int nbParams);
 void ass_fctEnd();
 void ass_blocBegin();
 void ass_blocEnd();
@@ -32,12 +32,12 @@ void ass_equ();
 void ass_not();
 void ass_fctCallParam();
 void ass_fctCallJmp(char* fctName);
-void ass_ifBegin();
-void ass_ifThen();
-void ass_ifEnd();
-void ass_whileBegin();
-void ass_whileDo();
-void ass_whileEnd();
+void ass_ifBegin(int numLabel);
+void ass_ifThen(int numLabel);
+void ass_ifEnd(int numLabel);
+void ass_whileBegin(int numLabel);
+void ass_whileDo(int numLabel);
+void ass_whileEnd(int numLabel);
 void ass_return();
 
 

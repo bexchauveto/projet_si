@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "st.h"
+#include "ass.h"
 
 int yylex();
 int yyerror(char *s);	
@@ -46,6 +47,7 @@ int yyerror(char *s);
 %left tINF tINFEQ tSUP tSUPEQ
 %left tPLUS tMOINS
 %left tMUL tDIV
+%right tNOT
 
 
 
@@ -72,7 +74,7 @@ TODO:
 Prg :
 	  Fct Prg
 	  		{ st_root($1, $2); }
-	| 		{ ST_UNDEFINED; };
+	| 		{ $$=ST_UNDEFINED; };
 
 /* ---- DEFINITION DES FONCTIONS ---- */
 Fct : 
@@ -122,7 +124,7 @@ BodyFoot :
 
 /* ---- DEFINITION DES DECLARATIONS ---- */
 DeclVar : 
-	  tINT tID SuiteDeclVar
+	  tINT tID SuiteDeclVar tPTVIR
 	  		{
 	  			st_Node_t type = st_type(0,0);
 	  			st_Node_t id = st_id($2);
@@ -217,7 +219,7 @@ Condition :
 	  Expr
 	  		{ $$ = $1; };
 Ret :
-	tRETURN Expr
+	tRETURN Expr tPTVIR
 			{ $$ = st_return($2); };
 
 
@@ -227,12 +229,16 @@ Ret :
 int yyerror(char* s)
 {
 	printf("%s\n", s);
+	exit(0);
 }
 
 
 int main(void)
 {
+	ass_setFile(stdin);
 	yyparse();
+	st_printTree(0,0);
+	//st_compute(0);
 	return 0;
 }
 

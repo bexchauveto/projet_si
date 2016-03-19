@@ -1,7 +1,9 @@
 #include "st.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include "ass.h"
+#include "function_table.h"
 
 
 
@@ -83,7 +85,7 @@ typedef struct {
 
 
 static st_Node_t treeRoot = ST_UNDEFINED;
-
+static int labelNumber = 0;
 
 
 
@@ -238,8 +240,7 @@ void st_computeFunction(st_Node_t node) // et prototype
 	// function name
 	LeafID* idFct = (LeafID*) prototype->children[1];
 	char* functionName = idFct->id;
-	ass_fctBegin(functionName);
-	// TODO enregistrer dans la table des fonctions
+	funT_addFunctionToTable(functionName);
 	// parameters
 	int nbParams = 0;
 	Node* params = (Node*) prototype->children[2];
@@ -250,10 +251,11 @@ void st_computeFunction(st_Node_t node) // et prototype
 		Node* param = (Node*) params->children[0];
 		LeafID* idParam = (LeafID*) param->children[1];
 		char* paramName = idParam->id;
-		// TODO gerer la table des symboles
+		funT_addParamToFunction(functionName, paramName);
 		
 		params = (Node*) params->children[1];
 	}
+	ass_fctBegin(functionName, nbParams);
 	freeNodeAll(prototype);
 	
 	// --- Compute corp
@@ -438,19 +440,21 @@ void st_compute(st_Node_t node)
 			break;
 		case NT_WHILE: {
 			Node* father = (Node*) node;
-			ass_whileBegin();
+			ass_whileBegin(labelNumber);
 			st_computeExpression(father->children[0], 0);
-			ass_whileDo();
+			ass_whileDo(labelNumber);
 			st_compute(father->children[1]);
-			ass_whileEnd();
+			ass_whileEnd(labelNumber);
+			labelNumber++;
 			break; }
 		case NT_IF: {
 			Node* father = (Node*) node;
-			ass_ifBegin();
+			ass_ifBegin(labelNumber);
 			st_computeExpression(father->children[0], 0);
-			ass_ifThen();
+			ass_ifThen(labelNumber);
 			st_compute(father->children[1]);
-			ass_ifEnd();
+			ass_ifEnd(labelNumber);
+			labelNumber++;
 			break; }
 		case NT_RETURN: {
 			Node* ex = (Node*) node;
@@ -465,18 +469,57 @@ void st_compute(st_Node_t node)
 
 
 
+void st_printTree(st_Node_t node, int indent)
+{
+	if(node == ST_UNDEFINED)
+	{
+		if(treeRoot == ST_UNDEFINED)
+			printf("arbre vide :(\n");
+		node = treeRoot;
+	}
+	
+	for(int i=0; i<indent; i++)
+	{
+		putchar(' ');
+	}
+	
+	switch(getNodeType(node))
+	{
+		case NT_TYPE:
+			printf("type\n");
+			break;
+		case NT_ID:
+			printf("ID\n");
+			break;
+		case NT_EXNB:
+			printf("NB\n");
+			break;
+		default:
+			printf("%d\n", getNodeType(node));
+			for(int i=0; i<NB_CHILDREN_MAX; i++)
+			{
+				Node* father = (Node*) node;
+				if(father->children[i] != ST_UNDEFINED)
+					st_printTree(father->children[i], indent+3);
+			}
+			break;
+	}
+}
+
+
+
 
 
 
 //###################################################
 //  CONSTRUCTION DE L'ARBRE
 //###################################################
-
+#define createNode( x , y )  (printf(#x"\n"),createNode(x,y));
 /* --- Noeuds --- */
-void st_createNode(NodeType type, st_Node_t n1, st_Node_t n2, st_Node_t n3)
+st_Node_t st_createNode(NodeType type, st_Node_t n1, st_Node_t n2, st_Node_t n3)
 {
 	st_Node_t children[] = {n1, n2, n3};
-	treeRoot = createNode(type, children);
+	return createNode(type, children);
 }
 
 void st_root(st_Node_t node, st_Node_t next)

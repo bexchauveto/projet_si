@@ -74,28 +74,37 @@ void funT_addParamToFunction(char * functionName, char * paramName)
 	}
 }
 
-/*
- * function that check if the number of parameters is the one that was given when the entry was create
- * Return code : -2 if the function given isn't in the table
- * -1 if the function given is in the table but the number of parameters is wrong
- * 0 if the function given is in the table and the number of parameters is right
- */
-int funT_checkNbParamsByFunName(char * functionName, int nbParams)
+char** funT_getParamsByFunName(char * functionName)
 {
-	//printf("function checkNbParamsByFunName\n");
+	//printf("function getParamsByFunName\n");
 	for(Pile * tmp = functionTable; tmp->prec != NULL; tmp = tmp->prec)
 	{
 		FunctionStruct * element = (FunctionStruct *) (tmp->data);
 		//printf("%s\n", element->funName);
 		if(strcmp(element->funName, functionName) == 0)
 		{
-			if (element->nbParams == nbParams)
-				return 0;
-			else
-				return -1;
+			return element->nameParams;
 		}
 	}
-	return -2;
+	return 0;
+}
+
+/*
+ * function that check if the number of parameters is the one that was given when the entry was create
+ * return the number of parameters
+ *        or -1 if the function doesn't exist
+ */
+int funT_getNbParamsByFunName(char * functionName)
+{
+	//printf("function getNbParamsByFunName\n");
+	for(Pile * tmp = functionTable; tmp->prec != NULL; tmp = tmp->prec)
+	{
+		FunctionStruct * element = (FunctionStruct *) (tmp->data);
+		//printf("%s\n", element->funName);
+		if(strcmp(element->funName, functionName) == 0)
+			return element->nbParams;
+	}
+	return -1;
 }
 
 /*
@@ -114,11 +123,11 @@ int main(int argc, char const *argv[])
 	funT_addParamToFunction("fun2", "param2_1");
 	funT_addFunctionToTable("fun3");
 	funT_addFunctionToTable("fun4");
-	int i = funT_checkNbParamsByFunName("fun1", 3);
-	int j = funT_checkNbParamsByFunName("fun2", 1);
-	int k = funT_checkNbParamsByFunName("fun3", 0);
-	int l = funT_checkNbParamsByFunName("fun4", 1);
-	int m = funT_checkNbParamsByFunName("fun5", 28);
+	int i = funT_getNbParamsByFunName("fun1");
+	int j = funT_getNbParamsByFunName("fun2");
+	int k = funT_getNbParamsByFunName("fun3");
+	int l = funT_getNbParamsByFunName("fun4");
+	int m = funT_getNbParamsByFunName("fun5");
 	printf("%d, %d, %d, %d, %d\n", i,j,k,l,m);
 	return 0;
 }
