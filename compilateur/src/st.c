@@ -4,48 +4,8 @@
 #include <stdlib.h>
 #include "ass.h"
 #include "function_table.h"
-
-
-
-//###################################################
-//  TYPES DE NODES
-//###################################################
-
-typedef enum {
-	NT_ROOT = 1,
-	NT_FUNCTION,
-	NT_PROTOTYPE,
-	NT_PARAMS,
-	NT_PARAM,
-	NT_BLOC,
-	NT_BODYHEAD,
-	NT_BODYBELLY,
-	NT_DECLVAR,
-	NT_DECLVAR2,
-	NT_DECLVARVAR,
-	NT_EXADD,
-	NT_EXSUB,
-	NT_EXMUL,
-	NT_EXDIV,
-	NT_EXOR,
-	NT_EXAND,
-	NT_EXNOT,
-	NT_EXINF,
-	NT_EXINFEQ,
-	NT_EXSUP,
-	NT_EXSUPEQ,
-	NT_EXDIFF,
-	NT_EXEQU,
-	NT_EXAFFECT,
-	NT_FCTCALL,
-	NT_CALLPARAMS,
-	NT_WHILE,
-	NT_IF,
-	NT_RETURN,
-	NT_TYPE,
-	NT_ID,
-	NT_EXNB
-} NodeType;
+#include "label_table.h"
+#include "symbole_table.h"
 
 
 
@@ -56,7 +16,7 @@ typedef enum {
 
 
 typedef struct {
-	NodeType type;
+	st_NodeType type;
 } AbstractNode;
 
 typedef struct {
@@ -83,7 +43,7 @@ typedef struct {
 
 
 
-
+static int firstCompute = 1;
 static st_Node_t treeRoot = ST_UNDEFINED;
 static int labelNumber = 0;
 
@@ -95,14 +55,14 @@ static int labelNumber = 0;
 
 
 
-st_Node_t createAN(NodeType type, st_Node_t handler)
+st_Node_t createAN(st_NodeType type, st_Node_t handler)
 {
 	AbstractNode* node = (AbstractNode*) handler;
 	node->type = type;
 	return node;
 }
 
-NodeType getNodeType(st_Node_t handler)
+st_NodeType getNodeType(st_Node_t handler)
 {
 	AbstractNode* node = (AbstractNode*) handler;
 	return node->type;
@@ -161,7 +121,7 @@ void freeID(st_Node_t handler)
 }
 
 //******** Node
-st_Node_t createNode(NodeType type, st_Node_t* children)
+st_Node_t createNode(st_NodeType type, st_Node_t* children)
 {
 	Node* node = malloc(sizeof(Node));
 	if(!node) return node;
@@ -200,6 +160,21 @@ void freeNodeAll(st_Node_t handler)
 		}
 	}
 	free(node);
+}
+
+
+
+void st_init()
+{
+	funT_createTable();
+	symboleT_createTable();
+	labelT_createTable();
+	ass_progBegin();
+}
+
+void st_free()
+{
+	ass_progEnd();
 }
 
 
@@ -260,7 +235,6 @@ void st_computeFunction(st_Node_t node) // et prototype
 	
 	// --- Compute corp
 	st_compute(corp); // bloc
-	
 	// --- end function
 	ass_fctEnd();
 }
@@ -331,7 +305,7 @@ void st_computeFctCall(st_Node_t node)
 void st_computeOperands(st_Node_t node)
 {
 	Node* ex = (Node*) node;
-	NodeType nodeType = getNodeType(ex->children[0]);
+	st_NodeType nodeType = getNodeType(ex->children[0]);
 	
 	st_computeExpression(ex->children[1], 1);
 	if(nodeType != NT_ID && nodeType != NT_EXNB)
@@ -344,9 +318,14 @@ void st_computeOperands(st_Node_t node)
 
 
 
-
 void st_compute(st_Node_t node)
 {
+	if(firstCompute)
+	{
+		st_init();
+		firstCompute = 0;
+	}
+	
 	if(node == ST_UNDEFINED)
 	{
 		if(treeRoot == ST_UNDEFINED)
@@ -362,6 +341,7 @@ void st_compute(st_Node_t node)
 				st_compute(inst->children[0]); // function
 				inst = (Node*) inst->children[1];
 			}
+			st_free();
 			break;
 		case NT_FUNCTION:
 			st_computeFunction(node);
@@ -514,193 +494,18 @@ void st_printTree(st_Node_t node, int indent)
 //###################################################
 //  CONSTRUCTION DE L'ARBRE
 //###################################################
-#define createNode( x , y )  (printf(#x"\n"),createNode(x,y));
+
 /* --- Noeuds --- */
-st_Node_t st_createNode(NodeType type, st_Node_t n1, st_Node_t n2, st_Node_t n3)
+st_Node_t st_createNode(st_NodeType type, st_Node_t n1, st_Node_t n2, st_Node_t n3)
 {
 	st_Node_t children[] = {n1, n2, n3};
-	return createNode(type, children);
+	st_Node_t node = createNode(type, children);
+	if(type == NT_ROOT)
+		treeRoot = node;
+	return node;
 }
 
-void st_root(st_Node_t node, st_Node_t next)
-{
-	st_Node_t children[] = {node, next, 0};
-	treeRoot = createNode(NT_ROOT, children);
-}
 
-st_Node_t st_function(st_Node_t prototype, st_Node_t bloc)
-{
-	st_Node_t children[] = {prototype, bloc, 0};
-	return createNode(NT_FUNCTION, children);
-}
-
-st_Node_t st_prototype(st_Node_t type, st_Node_t id, st_Node_t params)
-{
-	st_Node_t children[] = {type, id, params};
-	return createNode(NT_PROTOTYPE, children);
-}
-
-st_Node_t st_params(st_Node_t param, st_Node_t next)
-{
-	st_Node_t children[] = {param, next, 0};
-	return createNode(NT_PARAMS, children);
-}
-
-st_Node_t st_param(st_Node_t type, st_Node_t id)
-{
-	st_Node_t children[] = {type, id, 0};
-	return createNode(NT_PARAM, children);
-}
-
-st_Node_t st_bloc(st_Node_t head, st_Node_t belly, st_Node_t foot)
-{
-	st_Node_t children[] = {head, belly, foot};
-	return createNode(NT_BLOC, children);
-}
-
-st_Node_t st_bodyHead(st_Node_t inst, st_Node_t next)
-{
-	st_Node_t children[] = {inst, next, 0};
-	return createNode(NT_BODYHEAD, children);
-}
-
-st_Node_t st_bodyBelly(st_Node_t inst, st_Node_t next)
-{
-	st_Node_t children[] = {inst, next, 0};
-	return createNode(NT_BODYBELLY, children);
-}
-
-st_Node_t st_declVar(st_Node_t type, st_Node_t vars)
-{
-	st_Node_t children[] = {type, vars, 0};
-	return createNode(NT_DECLVAR, children);
-}
-
-st_Node_t st_declVar2(st_Node_t var, st_Node_t next)
-{
-	st_Node_t children[] = {var, next, 0};
-	return createNode(NT_DECLVAR2, children);
-}
-
-st_Node_t st_declVarVar(st_Node_t id, st_Node_t value)
-{
-	st_Node_t children[] = {id, value, 0};
-	return createNode(NT_DECLVARVAR, children);
-}
-
-st_Node_t st_exAdd(st_Node_t exp1, st_Node_t exp2)
-{
-	st_Node_t children[] = {exp1, exp2, 0};
-	return createNode(NT_EXADD, children);
-}
-
-st_Node_t st_exSub(st_Node_t exp1, st_Node_t exp2)
-{
-	st_Node_t children[] = {exp1, exp2, 0};
-	return createNode(NT_EXSUB, children);
-}
-
-st_Node_t st_exMul(st_Node_t exp1, st_Node_t exp2)
-{
-	st_Node_t children[] = {exp1, exp2, 0};
-	return createNode(NT_EXMUL, children);
-}
-
-st_Node_t st_exDiv(st_Node_t exp1, st_Node_t exp2)
-{
-	st_Node_t children[] = {exp1, exp2, 0};
-	return createNode(NT_EXDIV, children);
-}
-
-st_Node_t st_exOr(st_Node_t exp1, st_Node_t exp2)
-{
-	st_Node_t children[] = {exp1, exp2, 0};
-	return createNode(NT_EXOR, children);
-}
-
-st_Node_t st_exAnd(st_Node_t exp1, st_Node_t exp2)
-{
-	st_Node_t children[] = {exp1, exp2, 0};
-	return createNode(NT_EXAND, children);
-}
-
-st_Node_t st_exNot(st_Node_t exp)
-{
-	st_Node_t children[] = {exp, 0, 0};
-	return createNode(NT_EXNOT, children);
-}
-
-st_Node_t st_exInf(st_Node_t exp1, st_Node_t exp2)
-{
-	st_Node_t children[] = {exp1, exp2, 0};
-	return createNode(NT_EXINF, children);
-}
-
-st_Node_t st_exInfEq(st_Node_t exp1, st_Node_t exp2)
-{
-	st_Node_t children[] = {exp1, exp2, 0};
-	return createNode(NT_EXINFEQ, children);
-}
-
-st_Node_t st_exSup(st_Node_t exp1, st_Node_t exp2)
-{
-	st_Node_t children[] = {exp1, exp2, 0};
-	return createNode(NT_EXSUP, children);
-}
-
-st_Node_t st_exSupEq(st_Node_t exp1, st_Node_t exp2)
-{
-	st_Node_t children[] = {exp1, exp2, 0};
-	return createNode(NT_EXSUPEQ, children);
-}
-
-st_Node_t st_exEqu(st_Node_t exp1, st_Node_t exp2)
-{
-	st_Node_t children[] = {exp1, exp2, 0};
-	return createNode(NT_EXEQU, children);
-}
-
-st_Node_t st_exDiff(st_Node_t exp1, st_Node_t exp2)
-{
-	st_Node_t children[] = {exp1, exp2, 0};
-	return createNode(NT_EXDIFF, children);
-}
-
-st_Node_t st_exAffect(st_Node_t id, st_Node_t value)
-{
-	st_Node_t children[] = {id, value, 0};
-	return createNode(NT_EXAFFECT, children);
-}
-
-st_Node_t st_fctCall(st_Node_t id, st_Node_t params)
-{
-	st_Node_t children[] = {id, params, 0};
-	return createNode(NT_FCTCALL, children);
-}
-
-st_Node_t st_callParams(st_Node_t param, st_Node_t next)
-{
-	st_Node_t children[] = {param, next, 0};
-	return createNode(NT_CALLPARAMS, children);
-}
-
-st_Node_t st_while(st_Node_t cond, st_Node_t body)
-{
-	st_Node_t children[] = {cond, body, 0};
-	return createNode(NT_WHILE, children);
-}
-
-st_Node_t st_if(st_Node_t cond, st_Node_t body)
-{
-	st_Node_t children[] = {cond, body, 0};
-	return createNode(NT_IF, children);
-}
-
-st_Node_t st_return(st_Node_t expr)
-{
-	st_Node_t children[] = {expr, 0, 0};
-	return createNode(NT_RETURN, children);
-}
 
 /* --- Feuilles --- */
 st_Node_t st_type(int type, int flags)

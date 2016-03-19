@@ -3,8 +3,52 @@
 
 
 
+//###################################################
+//  TYPES DE NODES
+//###################################################
+
+typedef enum {
+	NT_ROOT = 1, // : node, next
+	NT_FUNCTION, // : prototype, bloc
+	NT_PROTOTYPE, // : type, id, params
+	NT_PARAMS, // : param, next
+	NT_PARAM, // : type, id
+	NT_BLOC, // : head, belly, foot
+	NT_BODYHEAD, // : instruction, next
+	NT_BODYBELLY, // : instruction, next
+	NT_DECLVAR, // : type, vars
+	NT_DECLVAR2, // : var, next
+	NT_DECLVARVAR, // : id, value
+	NT_EXADD, // : exp1, exp2
+	NT_EXSUB, // : exp1, exp2
+	NT_EXMUL, // : exp1, exp2
+	NT_EXDIV, // : exp1, exp2
+	NT_EXOR, // : exp1, exp2
+	NT_EXAND, // : exp1, exp2
+	NT_EXNOT, // : exp
+	NT_EXINF, // : exp1, exp2
+	NT_EXINFEQ, // : exp1, exp2
+	NT_EXSUP, // : exp1, exp2
+	NT_EXSUPEQ, // : exp1, exp2
+	NT_EXDIFF, // : exp1, exp2
+	NT_EXEQU, // : exp1, exp2
+	NT_EXAFFECT, // : id, value
+	NT_FCTCALL, // : id, params
+	NT_CALLPARAMS, // : param, next
+	NT_WHILE, // : condition, instruction
+	NT_IF, // : condition, instruction
+	NT_RETURN, // : exp
+	NT_TYPE,
+	NT_ID,
+	NT_EXNB
+} st_NodeType;
+
 
 #define ST_UNDEFINED 0
+
+
+
+
 
 
 
@@ -14,36 +58,10 @@ typedef void* st_Node_t;
 
 /* NOEUDS */
 // cree un node de l'arbre syntaxique
-void st_root(st_Node_t node, st_Node_t next);
-st_Node_t st_function(st_Node_t prototype, st_Node_t bloc);
-st_Node_t st_prototype(st_Node_t type, st_Node_t id, st_Node_t params);
-st_Node_t st_params(st_Node_t param, st_Node_t next);
-st_Node_t st_param(st_Node_t type, st_Node_t id);
-st_Node_t st_bloc(st_Node_t head, st_Node_t belly, st_Node_t foot);
-st_Node_t st_bodyHead(st_Node_t inst, st_Node_t next);
-st_Node_t st_bodyBelly(st_Node_t inst, st_Node_t next);
-st_Node_t st_declVar(st_Node_t type, st_Node_t vars);
-st_Node_t st_declVar2(st_Node_t var, st_Node_t next);
-st_Node_t st_declVarVar(st_Node_t id, st_Node_t value);
-st_Node_t st_exAdd(st_Node_t exp1, st_Node_t exp2);
-st_Node_t st_exSub(st_Node_t exp1, st_Node_t exp2);
-st_Node_t st_exMul(st_Node_t exp1, st_Node_t exp2);
-st_Node_t st_exDiv(st_Node_t exp1, st_Node_t exp2);
-st_Node_t st_exOr(st_Node_t exp1, st_Node_t exp2);
-st_Node_t st_exAnd(st_Node_t exp1, st_Node_t exp2);
-st_Node_t st_exNot(st_Node_t exp);
-st_Node_t st_exInf(st_Node_t exp1, st_Node_t exp2);
-st_Node_t st_exInfEq(st_Node_t exp1, st_Node_t exp2);
-st_Node_t st_exSup(st_Node_t exp1, st_Node_t exp2);
-st_Node_t st_exSupEq(st_Node_t exp1, st_Node_t exp2);
-st_Node_t st_exDiff(st_Node_t exp1, st_Node_t exp2);
-st_Node_t st_exEqu(st_Node_t exp1, st_Node_t exp2);
-st_Node_t st_exAffect(st_Node_t id, st_Node_t value);
-st_Node_t st_fctCall(st_Node_t id, st_Node_t params);
-st_Node_t st_callParams(st_Node_t param, st_Node_t next);
-st_Node_t st_while(st_Node_t cond, st_Node_t body);
-st_Node_t st_if(st_Node_t cond, st_Node_t body);
-st_Node_t st_return(st_Node_t expr);
+st_Node_t st_createNode(st_NodeType type, st_Node_t n1, st_Node_t n2, st_Node_t n3);
+#define st_node__(type, n1, n2, n3, ...) st_createNode(type, n1, n2, n3)
+#define st_node(type, ...) st_node__(type, __VA_ARGS__ , 0, 0, 0, 0, 0)
+
 
 
 /* FEUILLES */
@@ -55,9 +73,10 @@ st_Node_t st_exNb(int value);
 
 
 
-/* LECTURE */
+/* AUTRES */
 // lit l'arbre syntaxique et le compile
 void st_compute(st_Node_t node);
+
 
 void st_printTree(st_Node_t node, int indent);
 

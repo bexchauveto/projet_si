@@ -39,7 +39,7 @@ void ass_whileBegin(int numLabel);
 void ass_whileDo(int numLabel);
 void ass_whileEnd(int numLabel);
 void ass_return();
-
+void ass_print();
 
 
 

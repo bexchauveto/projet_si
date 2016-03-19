@@ -148,7 +148,7 @@ int readFile(FILE* fichier)
 		// lectures operandes
 		error = readInst(fichier, &ins, tabInstInfo[ins.code].nbOp);
 		if(error == -2) {
-			printf("Erreur : nombre d'operandes invalide pour le code (%c)\n", ins.code);
+			printf("Erreur (i%d) : nombre d'operandes invalide pour le code (%c)\n", i, ins.code);
 			continue;
 		}
 		
