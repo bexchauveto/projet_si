@@ -42,7 +42,7 @@ void symboleT_newBloc()
 }
 
 /*
- * Function that end a block a pop items for the current bloc and then decrease the numBloc
+ * Function that end a block, pop items for the current bloc and then decrease the numBloc
  */
 void symboleT_endBloc()
 {
@@ -53,6 +53,24 @@ void symboleT_endBloc()
 		//printf("%d\n", symboleTable != NULL);
 		//printf("%d, %d\n", element->courantBloc, numBloc);
 		if(element->courantBloc < numBloc)
+			break;
+		symboleT_popTable();
+	}
+	numBloc--;
+}
+
+/*
+ * Function that end a function, end all blocks for the current function and then decrease the numBloc
+ */
+void symboleT_endFunc()
+{
+	//printf("function endFunc\n");
+	while(symboleTable->prec != NULL)
+	{
+		SymboleStruct * element = (SymboleStruct *) (symboleTable->data);
+		//printf("%d\n", symboleTable != NULL);
+		//printf("%d, %d\n", element->courantBloc, numBloc);
+		if(element->courantBloc <= 1)
 			break;
 		symboleT_popTable();
 	}

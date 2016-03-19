@@ -1,13 +1,44 @@
-6 5 0
-6 3 6
-7 4
-D 3 4
-6 2 1
-1 3 3 2
-5 4 3
-5 3 4
-6 2 1
-3 3 3 2
-D 4 3
-D 1 3
+=> ass_progBegin
+6 4 0
+6 2 5
+7 .main
+=> ass_fctBegin
+E 2 3
+6 3 1
+1 2 2 3
+5 3 2
+=> ass_declVar
+E 2 0
+6 0 1
+1 2 2 0
+=> ass_ld
+6 1 2
+=> ass_ld
+6 0 10
+=> ass_mul
+2 0 0 1
+=> ass_str
+6 1 0
+1 1 1 3
+E 1 0
+=> ass_declVar
+E 2 0
+6 0 1
+1 2 2 0
+=> ass_ld
+6 0 5
+=> ass_str
+6 1 1
+1 1 1 3
+E 1 0
+C 0
+=> ass_fctEnd
+5 2 3
+6 3 1
+3 2 2 3
+D 3 2
+6 1 1
+3 2 2 1
+D 1 2
 F 1
+=> ass_progEnd

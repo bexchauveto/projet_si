@@ -27,7 +27,6 @@
 typedef enum {
 	ADDR_R0 = 0,
 	ADDR_R1,
-	ADDR_R2,
 	ADDR_SP,
 	ADDR_CONTEXT,
 	ADDR_STACK,
@@ -45,18 +44,18 @@ static int instructionNumber;
 
 
 
-void empiler(int addr)
+void empiler(int reg)
 {
-	printInst("D %d %d\n", ADDR_SP, addr); // *SP = *addr
-	printInst("6 %d 1\n", ADDR_R2); // R3 = 1
-	printInst("1 %d %d %d\n", ADDR_SP, ADDR_SP, ADDR_R2); // SP++
+	printInst("E %d %d\n", ADDR_SP, reg); // *SP = reg
+	printInst("6 %d 1\n", reg); // reg = 1
+	printInst("1 %d %d %d\n", ADDR_SP, ADDR_SP, reg); // SP++
 }
 
-void depiler(int addr)
+void depiler(int reg)
 {
-	printInst("6 %d 1\n", ADDR_R2); // R3 = 1
-	printInst("3 %d %d %d\n", ADDR_SP, ADDR_SP, ADDR_R2); // SP--
-	printInst("D %d %d\n", addr, ADDR_SP); // *addr = *SP
+	printInst("6 %d 1\n", reg); // *reg = 1
+	printInst("3 %d %d %d\n", ADDR_SP, ADDR_SP, reg); // SP--
+	printInst("D %d %d\n", reg, ADDR_SP); // *reg = *SP
 }
 
 
@@ -99,6 +98,7 @@ void ass_fctBegin(char* fctName, int nbParams)
 	labelT_pushTableComplet(fctName, instructionNumber);
 	empiler(ADDR_CONTEXT); // sauver le contexte
 	printInst("5 %d %d\n", ADDR_CONTEXT, ADDR_SP); // CONTEXT = SP
+	
 	symboleT_newBloc(); // parameters
 	char** tabParams = funT_getParamsByFunName(fctName);
 	for(int i=0; i<nbParams; i++)
@@ -108,13 +108,12 @@ void ass_fctBegin(char* fctName, int nbParams)
 	nbCurrentParams = nbParams;
 }
 
-void ass_fctEnd()
+void ass_fctEnd(char* fctName)
 {
 	PRINT_DEBUG();
 	printInst("5 %d %d\n", ADDR_SP, ADDR_CONTEXT);
 	depiler(ADDR_CONTEXT);
-	// sauter a l'addresse de retour.
-	printInst("D %d %d\n", ADDR_R1, ADDR_SP); // R1 = *SP
+	depiler(ADDR_R1); // depiler adresse de retour
 	printInst("F %d\n", ADDR_R1); // goto R2
 	symboleT_endBloc(); // parameters
 }
@@ -158,7 +157,7 @@ void ass_str(char* varName)
 		return; // TODO error
 	printInst("6 %d %d\n", ADDR_R1, addr); // R1 = addr
 	printInst("1 %d %d %d\n", ADDR_R1, ADDR_R1, ADDR_CONTEXT); // addr += CONTEXT
-	printInst("D %d %d\n", ADDR_R1, ADDR_R0); // *addr = R0
+	printInst("E %d %d\n", ADDR_R1, ADDR_R0); // *addr = R0
 }
 
 void ass_ld(int value, int reg)
@@ -217,7 +216,7 @@ void ass_or()
 	PRINT_DEBUG();
 	printInst("8 %d %d\n", ADDR_R0, instructionNumber+2); // if(!R0)  goto testR1;
 	printInst("7 %d\n", instructionNumber+3);             // goto end;
-	printInst("8 %d %d\n", ADDR_R0, instructionNumber+2); // if(!R1)  goto end;
+	printInst("8 %d %d\n", ADDR_R1, instructionNumber+2); // if(!R1)  goto end;
 	printInst("6 %d %d\n", ADDR_R0, 1);                   // R0 = 1
 }
 
@@ -254,7 +253,7 @@ void ass_fctCallParam()
 void ass_fctCallJmp(char* fctName)
 {
 	PRINT_DEBUG();
-	printInst("10 %d\n", ADDR_R1);
+	printInst("10 %d\n", ADDR_R1); // R1 = adresse de retour
 	empiler(ADDR_R1);
 	printInst("7 .%s\n", fctName);
 }
@@ -262,9 +261,8 @@ void ass_fctCallJmp(char* fctName)
 void ass_fctCallEnd()
 {
 	PRINT_DEBUG();
-	depiler(ADDR_R1); // depiler adresse de retour
-	printInst("6 %d %d\n", ADDR_R2, nbCurrentParams); // R3 = nbCurrentParams
-	printInst("3 %d %d %d\n", ADDR_SP, ADDR_SP, ADDR_R2); // SP = SP - nbCurrentParams
+	printInst("6 %d %d\n", ADDR_R1, nbCurrentParams); // R3 = nbCurrentParams
+	printInst("3 %d %d %d\n", ADDR_SP, ADDR_SP, ADDR_R1); // SP = SP - nbCurrentParams
 }
 
 void ass_ifBegin(int numLabel)
@@ -276,16 +274,16 @@ void ass_ifThen(int numLabel)
 {
 	PRINT_DEBUG();
 	char label[10];
-	sprintf(label, "eif%d",numLabel);
+	sprintf(label, "%deif",numLabel);
 	labelT_pushTableName(label);
-	printInst("jmf %d .%s\n", ADDR_R0, label); // goto ifEnd
+	printInst("8 %d .%s\n", ADDR_R0, label); // if(!R0) goto ifEnd
 }
 
 void ass_ifEnd(int numLabel)
 {
 	PRINT_DEBUG();
 	char label[10];
-	sprintf(label, "eif%d",numLabel);
+	sprintf(label, "%deif",numLabel);
 	labelT_addAddressToLabel(label, instructionNumber);
 }
 
@@ -293,7 +291,7 @@ void ass_whileBegin(int numLabel)
 {
 	PRINT_DEBUG();
 	char label[10];
-	sprintf(label, "bwhl%d",numLabel);
+	sprintf(label, "%dbwhl",numLabel);
 	labelT_pushTableComplet(label, instructionNumber);
 }
 
@@ -301,7 +299,7 @@ void ass_whileDo(int numLabel)
 {
 	PRINT_DEBUG();
 	char label[10];
-	sprintf(label, "ewhl%d",numLabel);
+	sprintf(label, "%dewhl",numLabel);
 	labelT_pushTableComplet(label, instructionNumber);
 	printInst("8 %d .%s\n", ADDR_R0, label); // if(!R0) goto whileEnd
 }
@@ -310,10 +308,10 @@ void ass_whileEnd(int numLabel)
 {
 	PRINT_DEBUG();
 	char label[10];
-	sprintf(label, "bwhl%d",numLabel);
+	sprintf(label, "%dbwhl",numLabel);
 	printInst("7 .%s\n", label); // goto whileBegin
 	
-	sprintf(label, "ewhl%d",numLabel);
+	sprintf(label, "%dewhl",numLabel);
 	labelT_addAddressToLabel(label, instructionNumber);
 }
 

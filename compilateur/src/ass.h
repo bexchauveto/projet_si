@@ -11,7 +11,7 @@ void ass_setFile(FILE* outputFile);
 void ass_progBegin();
 void ass_progEnd();
 void ass_fctBegin(char* fctName, int nbParams);
-void ass_fctEnd();
+void ass_fctEnd(char* fctName);
 void ass_blocBegin();
 void ass_blocEnd();
 void ass_declVar(char* varName);

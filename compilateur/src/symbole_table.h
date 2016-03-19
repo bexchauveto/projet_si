@@ -5,6 +5,7 @@
 void symboleT_createTable();
 void symboleT_newBloc();
 void symboleT_endBloc();
+void symboleT_endFunc();
 void symboleT_pushTable(char * name, int addr);
 void symboleT_popTable();
 void symboleT_setSymboleNumber(int symboleNumber);

@@ -53,7 +53,7 @@ void afficheInst(int indice, int nb);
 
 
 
-const int tabInstInfoSize = 16;
+const int tabInstInfoSize = 18;
 InstInfo tabInstInfo[] = {
 	{ 0, Ierror },// no instruction
 	{ 3, Iadd },  // ADD(1) : addition
@@ -194,6 +194,7 @@ int execute()
 		else
 			printf("code : 0\n");*/
 		R_IP++;
+		printf("exec : %d\n", ins->code);
 		error = tabInstInfo[ins->code].cb(ins);
 		if(R_IP<0 || R_IP>=SIZE_CODE)
 			error = -2;
@@ -309,17 +310,20 @@ int Iequ(Instruction* ins)
 
 int Ipri(Instruction* ins)
 {
-	if(!testData(ins,0))
+	/*if(!testData(ins,0))
 		return -1;
-	printf("%d\n",val(ins,0));
+	printf("%d\n",val(ins,0));*/
+	afficheData(0,10);
 	return 0;
 }
 
 int Icopa(Instruction* ins)
 {
+	printf("# %d %d\n", ins->op[0], ins->op[1]);
 	if(!testData(ins,0) || !testData(ins,1))
 		return -1;
 	ins->op[1] = val(ins,1);
+	printf("# %d\n", ins->op[1]);
 	if(!testData(ins,1))
 		return -1;
 	*p_val(ins,0) = val(ins,1);
@@ -380,7 +384,7 @@ void afficheInst(int indice, int nb)
 	printf("code => \n");
 	for(int i=indice; i<indice+nb; i++)
 	{
-		printf("  %d : %c\n", i, code[i].code);
+		printf("  %d : %d\n", i, code[i].code);
 	}
 }
 

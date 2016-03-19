@@ -200,7 +200,6 @@ void st_computeExpression(st_Node_t node, int destination)
 	else {
 		Node* ex2 = (Node*) node;
 		st_compute(ex2);
-		freeNode(node);
 	}
 }
 
@@ -230,29 +229,24 @@ void st_computeFunction(st_Node_t node) // et prototype
 		
 		params = (Node*) params->children[1];
 	}
-	ass_fctBegin(functionName, nbParams);
-	freeNodeAll(prototype);
 	
 	// --- Compute corp
-	st_compute(corp); // bloc
-	// --- end function
-	ass_fctEnd();
+	if(corp != ST_UNDEFINED)
+	{
+		ass_fctBegin(functionName, nbParams);
+		st_compute(corp); // bloc
+		ass_fctEnd(functionName);
+	}
+	
+	freeNodeAll(prototype);
 }
 
 void st_computeBloc(st_Node_t node) // et assimiles
 {
 	Node* father = (Node*) node;
-	Node* head  = (Node*) father->children[0];
-	Node* belly = (Node*) father->children[1];
-	Node* foot  = (Node*) father->children[2];
+	Node* belly = (Node*) father->children[0];
+	Node* foot  = (Node*) father->children[1];
 	
-	// --- Compute head
-	for(Node* inst = head; inst != ST_UNDEFINED;)
-	{
-		st_compute(inst->children[0]); // declVar
-		inst = (Node*) inst->children[1];
-		freeNode(inst);
-	}
 	
 	// --- Compute belly
 	for(Node* inst = belly; inst != ST_UNDEFINED;)

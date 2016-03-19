@@ -13,9 +13,8 @@ typedef enum {
 	NT_PROTOTYPE, // : type, id, params
 	NT_PARAMS, // : param, next
 	NT_PARAM, // : type, id
-	NT_BLOC, // : head, belly, foot
-	NT_BODYHEAD, // : instruction, next
-	NT_BODYBELLY, // : instruction, next
+	NT_BLOC, // : belly, foot
+	NT_BODY, // : instruction, next
 	NT_DECLVAR, // : type, vars
 	NT_DECLVAR2, // : var, next
 	NT_DECLVARVAR, // : id, value

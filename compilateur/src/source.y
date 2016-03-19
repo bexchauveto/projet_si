@@ -34,8 +34,8 @@ int yyerror(char *s);
 %token <string> tID
 
 %type <nodeID> Prg Fct Prototype Params DeclParam SuiteParams 
-%type <nodeID> Bloc Body BodyHead BodyBelly BodyFoot DeclVar SuiteDeclVar 
-%type <nodeID> Instruction Expr AppelFct AppelParams SuiteAppelParams While If Condition Ret
+%type <nodeID> Bloc Body BlocRet DeclVar SuiteDeclVar DeclVarVar
+%type <nodeID> Instruction Expr AppelFct AppelParams SuiteAppelParams While If Return
 
 
 
@@ -57,10 +57,8 @@ int yyerror(char *s);
 /*
 
 TODO:
-- mot clé const
-- affectation lors de la declaration
-- return n'importe ou
-- affectation n'importe ou
+- tableaux
+- pointeurs
 
 */
 
@@ -71,15 +69,15 @@ TODO:
 
 %%
 
-/* ---- DEFINITION DU FICHIER ---- */
+/* ------ DEFINITION DU FICHIER ------ */
 Prg :
 	  Fct Prg
 	  		{ st_node(NT_ROOT, $1, $2); }
 	| 		{ $$=ST_UNDEFINED; };
 
-/* ---- DEFINITION DES FONCTIONS ---- */
+/* ------ DEFINITION DES FONCTIONS ------ */
 Fct : 
-	  Prototype Bloc 
+	  Prototype BlocRet 
 	  		{ $$ = st_node(NT_FUNCTION, $1, $2); };
 Prototype : 
 	  tINT tID tPO Params tPF 
@@ -104,56 +102,66 @@ SuiteParams :
 	  		{ $$ = st_node(NT_PARAMS, $2, $3); }
 	| 		{ $$=ST_UNDEFINED; };
 
-/* ---- DEFINITION DES BLOCS ---- */
+/* ------ DEFINITION DES BLOCS ------ */
 Bloc : 
 	  tAO Body tAF
-	  		{ $$ = $2; };
+	  		{ $$ = st_node(NT_BLOC, $2, ST_UNDEFINED); };
+BlocRet : 
+	  tAO Body tAF
+	  		{ $$ = st_node(NT_BLOC, $2, ST_UNDEFINED); }
+	| tAO Body Return tAF
+	  		{ $$ = st_node(NT_BLOC, $2, $3); };
 Body : 
-	  BodyHead BodyBelly BodyFoot
-	  		{ $$ = st_node(NT_BLOC, $1, $2, $3); };
-BodyHead : 
-	  DeclVar BodyHead
-	  		{ $$ = st_node(NT_BODYHEAD, $1, $2); }
-	| 		{ $$=ST_UNDEFINED; };
-BodyBelly : 
-	  Instruction BodyBelly
-	  		{ $$ = st_node(NT_BODYBELLY, $1, $2); }
-	| 		{ $$=ST_UNDEFINED; };
-BodyFoot :
-	  Ret	{ $$ = $1; }
+	  Instruction Body
+	  		{ $$ = st_node(NT_BODY, $1, $2); }
 	| 		{ $$=ST_UNDEFINED; };
 
-/* ---- DEFINITION DES DECLARATIONS ---- */
+/* ------ DEFINITION DES DECLARATIONS ------ */
 DeclVar : 
-	  tINT tID SuiteDeclVar tPTVIR
+	  tINT DeclVarVar SuiteDeclVar
 	  		{
 	  			st_Node_t type = st_type(0,0);
-	  			st_Node_t id = st_id($2);
-	  			st_Node_t v = st_node(NT_DECLVARVAR, id, 0);
-	  			st_Node_t d2 = st_node(NT_DECLVAR2, v, $3);
+	  			st_Node_t d2 = st_node(NT_DECLVAR2, $2, $3);
 	  			$$ = st_node(NT_DECLVAR, type, d2);
 	  		};
-//	| tINT tID tEQ Expr SuiteDeclVar;
 SuiteDeclVar : 
-	  tVIR tID SuiteDeclVar
-	  		{
-	  			st_Node_t id = st_id($2);
-	  			st_Node_t v = st_node(NT_DECLVARVAR, id, 0);
-	  			$$ = st_node(NT_DECLVAR2, v, $3);
-			}
-//	| tVIR tID tEQ Expr SuiteDeclVar
+	  tVIR DeclVarVar SuiteDeclVar
+	  		{ $$ = st_node(NT_DECLVAR2, $2, $3); }
 	| 		{ $$=ST_UNDEFINED; };
+DeclVarVar : 
+	  tID
+	  		{
+	  			st_Node_t id = st_id($1);
+	  			$$ = st_node(NT_DECLVARVAR, id, ST_UNDEFINED);
+	  		}
+	| tID tEQ Expr
+			{
+	  			st_Node_t id = st_id($1);
+	  			$$ = st_node(NT_DECLVARVAR, id, $3);
+	  		}
 
-/* ---- DEFINITION DES INSTRUCTIONS ---- */
+
+/* ------ DEFINITION DES INSTRUCTIONS ------ */
 Instruction :
 	  Expr tPTVIR
 	  		{ $$ = $1; }
+	| DeclVar tPTVIR
+			{ $$ = $1; }
 	| Bloc
 			{ $$ = $1; }
 	| While
 			{ $$ = $1; }
 	| If
 			{ $$ = $1; };
+While : 
+	  tWHILE tPO Expr tPF Instruction
+	  		{ $$ = st_node(NT_WHILE, $3, $5); };
+If : 
+	  tIF tPO Expr tPF Instruction
+	  		{ $$ = st_node(NT_IF, $3, $5); };
+Return :
+	tRETURN Expr tPTVIR
+			{ $$ = st_node(NT_RETURN, $2); };
 Expr : 
 	  tPO Expr tPF 
 	  		{ $$ = $2; }
@@ -210,18 +218,8 @@ SuiteAppelParams :
 	  tVIR Expr SuiteAppelParams
 	  		{ $$ = st_node(NT_CALLPARAMS, $2, $3); }
 	| 		{ $$=ST_UNDEFINED; };
-While : 
-	  tWHILE tPO Condition tPF Instruction
-	  		{ $$ = st_node(NT_WHILE, $3, $5); };
-If : 
-	  tIF tPO Condition tPF Instruction
-	  		{ $$ = st_node(NT_IF, $3, $5); };
-Condition : 
-	  Expr
-	  		{ $$ = $1; };
-Ret :
-	tRETURN Expr tPTVIR
-			{ $$ = st_node(NT_RETURN, $2); };
+
+
 
 
 
