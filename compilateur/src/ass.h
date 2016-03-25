@@ -32,6 +32,7 @@ void ass_equ();
 void ass_not();
 void ass_fctCallParam();
 void ass_fctCallJmp(char* fctName);
+void ass_fctCallEnd();
 void ass_ifBegin(int numLabel);
 void ass_ifThen(int numLabel);
 void ass_ifEnd(int numLabel);

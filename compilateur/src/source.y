@@ -17,7 +17,7 @@ int yyerror(char *s);
 
 
 /* ---- DEFINITIONS TOKENS ---- */
-%token tPO tPF tAO tAF tPLUS tMOINS tMUL tDIV tEQ tVIR tINT tCONST tPRINT tRETURN tPTVIR tIF tWHILE tOR tAND tINF tSUP tSUPEQ tINFEQ tEQU tDIFF tNOT
+%token tPO tPF tAO tAF tPLUS tMOINS tMUL tDIV tEQ tVIR tINT tCONST tRETURN tPTVIR tIF tWHILE tOR tAND tINF tSUP tSUPEQ tINFEQ tEQU tDIFF tNOT
 
 %union 
 {
@@ -227,7 +227,7 @@ SuiteAppelParams :
 
 int yyerror(char* s)
 {
-	printf("%s\n", s);
+	fprintf(stderr,"%s\n", s);
 	exit(0);
 }
 
@@ -236,7 +236,7 @@ int main(void)
 {
 	ass_setFile(stdin);
 	yyparse();
-	st_printTree(0,0);
+	//st_printTree(0,0);
 	st_compute(0);
 	return 0;
 }

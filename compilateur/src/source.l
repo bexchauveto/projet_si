@@ -37,7 +37,6 @@ EXP		[0-9]+[eE][+-]?[0-9]+
 [\n]	;
 "int"	return tINT;
 "const"	return tCONST;
-"print"	return tPRINT;
 "return" return tRETURN;
 "if"	return tIF;
 "while"	return tWHILE;

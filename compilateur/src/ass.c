@@ -36,7 +36,7 @@ typedef enum {
 
 
 static FILE* file = 0;
-static int nbCurrentParams;
+static int nbCurrentParams = 0;
 static int instructionNumber;
 
 
@@ -105,7 +105,6 @@ void ass_fctBegin(char* fctName, int nbParams)
 	{
 		symboleT_pushTable(tabParams[i], (-2-nbParams) + i );
 	}
-	nbCurrentParams = nbParams;
 }
 
 void ass_fctEnd(char* fctName)
@@ -248,6 +247,7 @@ void ass_fctCallParam()
 {
 	PRINT_DEBUG();
 	empiler(ADDR_R0);
+	nbCurrentParams++;
 }
 
 void ass_fctCallJmp(char* fctName)
@@ -263,6 +263,7 @@ void ass_fctCallEnd()
 	PRINT_DEBUG();
 	printInst("6 %d %d\n", ADDR_R1, nbCurrentParams); // R3 = nbCurrentParams
 	printInst("3 %d %d %d\n", ADDR_SP, ADDR_SP, ADDR_R1); // SP = SP - nbCurrentParams
+	nbCurrentParams = 0;
 }
 
 void ass_ifBegin(int numLabel)
@@ -318,6 +319,13 @@ void ass_whileEnd(int numLabel)
 void ass_return()
 {
 	PRINT_DEBUG();
+}
+
+void ass_print()
+{
+	PRINT_DEBUG();
+	depiler(ADDR_R0);
+	printInst("C %d\n", ADDR_R0);
 }
 
 

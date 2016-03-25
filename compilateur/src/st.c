@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "ass.h"
 #include "function_table.h"
 #include "label_table.h"
@@ -166,9 +167,16 @@ void freeNodeAll(st_Node_t handler)
 
 void st_init()
 {
+	// Create tables
 	funT_createTable();
 	symboleT_createTable();
 	labelT_createTable();
+	
+	// Create language defined functions
+	funT_addFunctionToTable("print");
+	funT_addParamToFunction("print", "");
+	
+	// Begin program
 	ass_progBegin();
 }
 
@@ -252,8 +260,9 @@ void st_computeBloc(st_Node_t node) // et assimiles
 	for(Node* inst = belly; inst != ST_UNDEFINED;)
 	{
 		st_compute(inst->children[0]); // Instruction
-		inst = (Node*) inst->children[1];
+		Node* tmp = (Node*) inst->children[1];
 		freeNode(inst);
+		inst = tmp;
 	}
 	
 	// --- Compute foot
@@ -286,14 +295,53 @@ void st_computeDeclVar(st_Node_t node)
 		ass_declVar(varName);
 		freeNodeAll(var);
 		
-		declVar = (Node*) declVar->children[1];
+		Node* tmp = (Node*) declVar->children[1];
 		freeNode(declVar);
+		declVar = tmp;
 	}
 }
 
 void st_computeFctCall(st_Node_t node)
 {
-	// TODO
+	Node* father = (Node*) node;
+	Node* params = (Node*) father->children[1];
+	LeafID* id = (LeafID*) father->children[0];
+	
+	// --- Compute function name
+	char* fctName = id->id;
+	int nbParams = funT_getNbParamsByFunName(fctName);
+	if(nbParams == -1)
+	{
+		return; // TODO error
+	}
+	
+	// --- Compute params
+	for(Node* param = params; param != ST_UNDEFINED;)
+	{
+		st_computeExpression(param->children[0], 0);
+		ass_fctCallParam();
+		
+		Node* tmp = (Node*) param->children[1];
+		freeNode(param);
+		param = tmp;
+		nbParams--;
+	}
+	if(nbParams != 0)
+	{
+		return; // TODO error
+	}
+	
+	// --- Compute function call
+	if(!strcmp(fctName, "print"))
+	{
+		ass_print();
+	}
+	else
+	{
+		ass_fctCallJmp(fctName);
+		ass_fctCallEnd();
+	}
+	freeID(id);
 }
 
 void st_computeOperands(st_Node_t node)
@@ -333,10 +381,12 @@ void st_compute(st_Node_t node)
 			for(Node* inst = (Node*) node; inst != ST_UNDEFINED;)
 			{
 				st_compute(inst->children[0]); // function
-				inst = (Node*) inst->children[1];
+				Node* tmp = (Node*) inst->children[1];
+				freeNode(inst);
+				inst = tmp;
 			}
 			st_free();
-			break;
+			return;
 		case NT_FUNCTION:
 			st_computeFunction(node);
 			break;
