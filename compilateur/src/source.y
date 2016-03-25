@@ -5,6 +5,7 @@
 
 #include "st.h"
 #include "ass.h"
+#include "linker.h"
 
 
 int yylex();
@@ -232,12 +233,22 @@ int yyerror(char* s)
 }
 
 
-int main(void)
+int main(int argc, char * argv[])
 {
-	ass_setFile(stdin);
+	FILE * file = fopen(argv[1], "w");
+	if(file == NULL)
+	{
+		return -1;
+	}
+	ass_setFile(file);
 	yyparse();
 	//st_printTree(0,0);
 	st_compute(0);
+	fflush(file);
+	fclose(file);
+	linker_openFile(argv[1]);
+	linker_readFileAndReplaceLabel(file);
+	linker_closeFile(file);
 	return 0;
 }
 

@@ -40,7 +40,7 @@ static int nbCurrentParams = 0;
 static int instructionNumber;
 
 
-#define printInst(...) instructionNumber++;printf(__VA_ARGS__)
+#define printInst(...) instructionNumber++;fprintf(file,__VA_ARGS__)
 
 
 
