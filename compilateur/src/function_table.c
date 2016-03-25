@@ -19,19 +19,6 @@ typedef struct
 } FunctionStruct;
 
 
-
-//nom fonction
-//type retour
-//nombre params
-//type param
-//nom param
-
-//ajouter dans la table
-//verifier le nombre du param à partir d'un nom de fonction
-
-
-
-
 Pile * functionTable; // The stack
 
 /*
