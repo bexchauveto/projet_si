@@ -6,6 +6,7 @@
 #include "st.h"
 #include "ass.h"
 #include "linker.h"
+#include "error.h"
 
 
 int yylex();
@@ -228,27 +229,35 @@ SuiteAppelParams :
 
 int yyerror(char* s)
 {
-	fprintf(stderr,"%s\n", s);
-	exit(0);
+	error(ERR_FATAL, s);
 }
 
 
 int main(int argc, char * argv[])
 {
+	// --- Lecture du fichier
+	yyparse();
+	//st_printTree(0,0);
+	
+	// --- Compilation
 	FILE * file = fopen(argv[1], "w");
 	if(file == NULL)
 	{
 		return -1;
 	}
 	ass_setFile(file);
-	yyparse();
-	//st_printTree(0,0);
 	st_compute(0);
 	fflush(file);
 	fclose(file);
+	
+	// --- Linkage
 	linker_openFile(argv[1]);
 	linker_readFileAndReplaceLabel(file);
 	linker_closeFile(file);
+	
 	return 0;
 }
+
+
+
 

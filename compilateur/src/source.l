@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "y.tab.h"
+#include "error.h"
 
 %}
 
@@ -34,7 +35,7 @@ EXP		[0-9]+[eE][+-]?[0-9]+
 "&&"	return tAND;
 "||"	return tOR;
 [\t]	;
-[\n]	;
+[\n]	err_newLine();
 "int"	return tINT;
 "const"	return tCONST;
 "return" return tRETURN;
