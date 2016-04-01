@@ -25,12 +25,28 @@ entity RegisterBench is
 end RegisterBench;
 
 architecture Behavioral of RegisterBench is
-
+	TYPE REGISTERS IS ARRAY (0 to (NB_REGISTERS-1)) OF STD_LOGIC_VECTOR (SIZE-1 downto 0);
+	signal R : REGISTERS;
+	signal memAddrA : STD_LOGIC_VECTOR (3 downto 0);
+	signal memAddrB : STD_LOGIC_VECTOR (3 downto 0);
 begin
-
+	
+	QA <= R(memAddrA);
+	QB <= R(memAddrB);
+	
 	regbench : process (CLK) is
 	begin
-		
+		if rising_edge(CLK) then
+			if RST = '0' then
+				for i in 0 to (NB_REGISTERS-1) loop
+					R(i) <= (others => '0');
+				end loop;
+			else
+				if W = '1' then
+					
+				end if;
+			end if;
+		end if;
 	end process;
 
 end Behavioral;
