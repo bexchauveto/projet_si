@@ -52,7 +52,7 @@ Rj <= A;
 Rk <= B;
 S <= Ri;
 
-process()
+process
 
 begin
 	case(Ctrl_Alu) is
@@ -79,7 +79,7 @@ begin
 		O := '1';
 	end if;
 
-end;
+end process;
 
 
 end Behavioral;
