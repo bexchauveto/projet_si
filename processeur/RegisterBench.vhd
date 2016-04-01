@@ -12,10 +12,12 @@ use IEEE.STD_LOGIC_1164.ALL;
 --use UNISIM.VComponents.all;
 
 entity RegisterBench is
-	 Generic (SIZE : Natural := 8);
-    Port ( addrA : in  STD_LOGIC_VECTOR (3 downto 0);
-           addrB : in  STD_LOGIC_VECTOR (3 downto 0);
-           addrW : in  STD_LOGIC_VECTOR (3 downto 0);
+	 Generic ( SIZE : Natural := 8;
+				  SIZE_REG : Natural := 4;
+				  NB_REGISTERS : Natural := 16);
+    Port ( addrA : in  STD_LOGIC_VECTOR (SIZE_REG-1 downto 0);
+           addrB : in  STD_LOGIC_VECTOR (SIZE_REG-1 downto 0);
+           addrW : in  STD_LOGIC_VECTOR (SIZE_REG-1 downto 0);
            W : in  STD_LOGIC;
            DATA : in  STD_LOGIC_VECTOR (SIZE-1 downto 0);
            RST : in  STD_LOGIC;
@@ -27,8 +29,8 @@ end RegisterBench;
 architecture Behavioral of RegisterBench is
 	TYPE REGISTERS IS ARRAY (0 to (NB_REGISTERS-1)) OF STD_LOGIC_VECTOR (SIZE-1 downto 0);
 	signal R : REGISTERS;
-	signal memAddrA : STD_LOGIC_VECTOR (3 downto 0);
-	signal memAddrB : STD_LOGIC_VECTOR (3 downto 0);
+	signal memAddrA : STD_LOGIC_VECTOR (SIZE_REG-1 downto 0);
+	signal memAddrB : STD_LOGIC_VECTOR (SIZE_REG-1 downto 0);
 begin
 	
 	QA <= R(memAddrA);
@@ -42,8 +44,10 @@ begin
 					R(i) <= (others => '0');
 				end loop;
 			else
+				memAddrA <= addrA;
+				memAddrB <= addrB;
 				if W = '1' then
-					
+					R(addrW) <= DATA;
 				end if;
 			end if;
 		end if;
