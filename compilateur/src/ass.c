@@ -4,6 +4,7 @@
 #include "function_table.h"
 #include "label_table.h"
 #include "symbole_table.h"
+#include "error.h"
 
 
 
@@ -11,7 +12,7 @@
 #define ASS_DEBUG
 
 #ifdef ASS_DEBUG
-#    define PRINT_DEBUG() printf("=> %s\n",__func__)
+#    define PRINT_DEBUG() fprintf(file,"=> %s\n",__func__)
 #else
 #    define PRINT_DEBUG() ((void) 0)
 #endif
@@ -142,7 +143,7 @@ void ass_ldr(char* varName, int reg)
 	PRINT_DEBUG();
 	int addr = symboleT_seekAddressByName(varName);
 	if(addr == -1)
-		return; // TODO error
+		errorSymbol(ERR_FATAL, "the variable %s is undeclared", varName, 0);
 	printInst("6 %d %d\n", ADDR_R0 + reg, addr); // reg = addr
 	printInst("1 %d %d %d\n", ADDR_R0 + reg, ADDR_R0 + reg, ADDR_CONTEXT); // addr += CONTEXT
 	printInst("D %d %d\n", ADDR_R0 + reg, ADDR_R0 + reg); // reg = *addr
@@ -153,7 +154,7 @@ void ass_str(char* varName)
 	PRINT_DEBUG();
 	int addr = symboleT_seekAddressByName(varName);
 	if(addr == -1)
-		return; // TODO error
+		errorSymbol(ERR_FATAL, "the variable %s is undeclared", varName, 0);
 	printInst("6 %d %d\n", ADDR_R1, addr); // R1 = addr
 	printInst("1 %d %d %d\n", ADDR_R1, ADDR_R1, ADDR_CONTEXT); // addr += CONTEXT
 	printInst("E %d %d\n", ADDR_R1, ADDR_R0); // *addr = R0
@@ -243,6 +244,22 @@ void ass_not()
 	printInst("11 %d %d\n", ADDR_R0, ADDR_R0);
 }
 
+void ass_ref(char* varName, int reg)
+{
+	PRINT_DEBUG();
+	int addr = symboleT_seekAddressByName(varName);
+	if(addr == -1)
+		errorSymbol(ERR_FATAL, "the variable %s is undeclared", varName, 0);
+	printInst("6 %d %d\n", ADDR_R0+reg, addr); // reg = addr
+	printInst("1 %d %d %d\n", ADDR_R0+reg, ADDR_R0+reg, ADDR_CONTEXT); // addr += CONTEXT
+}
+
+void ass_deref()
+{
+	PRINT_DEBUG();
+	printInst("D %d %d\n", ADDR_R0, ADDR_R0); // R0 = *R0
+}
+
 void ass_fctCallParam()
 {
 	PRINT_DEBUG();
@@ -275,9 +292,21 @@ void ass_ifThen(int numLabel)
 {
 	PRINT_DEBUG();
 	char label[10];
+	sprintf(label, "%delse",numLabel);
+	labelT_pushTableName(label);
+	printInst("8 %d .%s\n", ADDR_R0, label); // if(!R0) goto else
+}
+
+void ass_ifElse(int numLabel)
+{
+	PRINT_DEBUG();
+	char label[10];
 	sprintf(label, "%deif",numLabel);
 	labelT_pushTableName(label);
-	printInst("8 %d .%s\n", ADDR_R0, label); // if(!R0) goto ifEnd
+	printInst("7 .%s\n", label); // goto ifEnd
+	
+	sprintf(label, "%delse",numLabel);
+	labelT_addAddressToLabel(label, instructionNumber);
 }
 
 void ass_ifEnd(int numLabel)

@@ -19,7 +19,7 @@ int yyerror(char *s);
 
 
 /* ---- DEFINITIONS TOKENS ---- */
-%token tPO tPF tAO tAF tPLUS tMOINS tMUL tDIV tEQ tVIR tINT tCONST tRETURN tPTVIR tIF tWHILE tOR tAND tINF tSUP tSUPEQ tINFEQ tEQU tDIFF tNOT
+%token tPO tPF tAO tAF tPLUS tMOINS tMUL tDIV tEQ tVIR tINT tCONST tRETURN tPTVIR tIF tELSE tWHILE tOR tAND tINF tSUP tSUPEQ tINFEQ tEQU tDIFF tNOT tREF tCO tCF
 
 %union 
 {
@@ -50,7 +50,8 @@ int yyerror(char *s);
 %left tINF tINFEQ tSUP tSUPEQ
 %left tPLUS tMOINS
 %left tMUL tDIV
-%right tNOT
+%right tNOT tREF DEREFERENCE
+%left tCO tCF
 
 
 
@@ -80,7 +81,9 @@ Prg :
 /* ------ DEFINITION DES FONCTIONS ------ */
 Fct : 
 	  Prototype BlocRet 
-	  		{ $$ = st_node(NT_FUNCTION, $1, $2); };
+	  		{ $$ = st_node(NT_FUNCTION, $1, $2); }
+	| Prototype tPTVIR
+			{ $$ = st_node(NT_FUNCTION, $1, ST_UNDEFINED); };
 Prototype : 
 	  tINT tID tPO Params tPF 
 	  		{
@@ -140,7 +143,7 @@ DeclVarVar :
 			{
 	  			st_Node_t id = st_id($1);
 	  			$$ = st_node(NT_DECLVARVAR, id, $3);
-	  		}
+	  		};
 
 
 /* ------ DEFINITION DES INSTRUCTIONS ------ */
@@ -160,7 +163,9 @@ While :
 	  		{ $$ = st_node(NT_WHILE, $3, $5); };
 If : 
 	  tIF tPO Expr tPF Instruction
-	  		{ $$ = st_node(NT_IF, $3, $5); };
+	  		{ $$ = st_node(NT_IF, $3, $5, ST_UNDEFINED); }
+	| tIF tPO Expr tPF Instruction tELSE Instruction
+			{ $$ = st_node(NT_IF, $3, $5, $7); };
 Return :
 	tRETURN Expr tPTVIR
 			{ $$ = st_node(NT_RETURN, $2); };
@@ -198,6 +203,15 @@ Expr :
 	  			st_Node_t id = st_id($1);
 	  			$$ = st_node(NT_EXAFFECT, id, $3);
 			}
+	| Expr tCO Expr tCF
+			{ $$ = st_node(NT_EXTAB,$1,$3); }
+	| tMUL Expr %prec DEREFERENCE
+			{ $$ = st_node(NT_EXDEREF,$2); }
+	| tREF tID
+			{
+				st_Node_t id = st_id($2);
+				$$ = st_node(NT_EXREF,id);
+			}
 	| AppelFct
 	  		{ $$ = $1; }
 	| tNB
@@ -229,7 +243,7 @@ SuiteAppelParams :
 
 int yyerror(char* s)
 {
-	error(ERR_FATAL, s);
+	error(ERR_FATAL, s, 1);
 }
 
 

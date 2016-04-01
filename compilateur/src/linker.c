@@ -3,6 +3,7 @@
 #include <string.h>
 #include "linker.h"
 #include "label_table.h"
+#include "error.h"
 
 #define SIZEMAXLABEL 30
 
@@ -40,7 +41,8 @@ void linker_readFileAndReplaceLabel(FILE * file)
 		{
 			fscanf(file,"%s", label);
 			addrLabel = labelT_seekAddressByName(label);
-			//TODO : Check if addrLabel is different from -1
+			if(addrLabel == -1)
+				errorSymbol(ERR_MINOR, "undefined reference to %s", label, 0);
 			fseek(file, -(strlen(label)+1), SEEK_CUR);
 			fprintf(file, "%*d",(int)(strlen(label)+1),addrLabel);
 		}

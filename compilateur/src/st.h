@@ -24,18 +24,21 @@ typedef enum {
 	NT_EXDIV, // : exp1, exp2
 	NT_EXOR, // : exp1, exp2
 	NT_EXAND, // : exp1, exp2
-	NT_EXNOT, // : exp
 	NT_EXINF, // : exp1, exp2
 	NT_EXINFEQ, // : exp1, exp2
 	NT_EXSUP, // : exp1, exp2
 	NT_EXSUPEQ, // : exp1, exp2
 	NT_EXDIFF, // : exp1, exp2
 	NT_EXEQU, // : exp1, exp2
+	NT_EXTAB, // : exp1, exp2
+	NT_EXNOT, // : exp
+	NT_EXDEREF, // : exp
+	NT_EXREF, // : id
 	NT_EXAFFECT, // : id, value
 	NT_FCTCALL, // : id, params
 	NT_CALLPARAMS, // : param, next
 	NT_WHILE, // : condition, instruction
-	NT_IF, // : condition, instruction
+	NT_IF, // : condition, instruction, else
 	NT_RETURN, // : exp
 	NT_TYPE,
 	NT_ID,

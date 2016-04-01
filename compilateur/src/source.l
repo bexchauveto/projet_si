@@ -17,15 +17,17 @@ EXP		[0-9]+[eE][+-]?[0-9]+
 ")"		return tPF;
 "{"		return tAO;
 "}"		return tAF;
+"["		return tCO;
+"]"		return tCF;
 "+"		return tPLUS;
 "-"		return tMOINS;
 "*"		return tMUL;
 "/"		return tDIV;
 "="		return tEQ;
 "!"		return tNOT;
+"&"		return tREF;
 ","		return tVIR;
 ";"		return tPTVIR;
-" "		;
 ">"		return tSUP;
 "<"		return tINF;
 ">="	return tSUPEQ;
@@ -34,12 +36,14 @@ EXP		[0-9]+[eE][+-]?[0-9]+
 "=="	return tEQU;
 "&&"	return tAND;
 "||"	return tOR;
+" "		;
 [\t]	;
 [\n]	err_newLine();
 "int"	return tINT;
 "const"	return tCONST;
 "return" return tRETURN;
 "if"	return tIF;
+"else"	return tELSE;
 "while"	return tWHILE;
 {TEXT}	{
 			char* p = malloc(strlen(yytext)+1);

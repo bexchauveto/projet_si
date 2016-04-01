@@ -11,7 +11,11 @@ typedef enum {
 
 
 
-void error(ErrorType type, char* message);
+void error(ErrorType type, char* message, int printLine);
+void errorSymbol(ErrorType type, char* message, char* symbolName, int printLine);
+
+int getNbError();
+int getNbWarning();
 
 void err_newLine();
 
