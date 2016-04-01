@@ -112,6 +112,14 @@ int symboleT_getSymboleNumber()
 }
 
 /*
+ * Function that set the number of symbols pushed in the table
+ */
+void symboleT_setSymboleNumber(int nbSymbols)
+{
+	numSymbole = nbSymbols;
+}
+
+/*
  * Function that seek an address by a name of a symbol
  * return -1 if not found
  */

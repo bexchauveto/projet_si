@@ -79,7 +79,6 @@ st_Node_t st_exNb(int value);
 // lit l'arbre syntaxique et le compile
 void st_compute(st_Node_t node);
 
-
 void st_printTree(st_Node_t node, int indent);
 
 

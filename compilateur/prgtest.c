@@ -1,14 +1,16 @@
 
 
 
+int func(int a, int x, int y)
+{
+	int b = a;
+	return b+10;
+}
+
+
 int main()
 {
-	int a;
-	a = 10*2;
-	int b;
-	b = 5;
-	print(a);
-	print(b);
+	print(func(10,0,0));
 }
 
 

@@ -362,7 +362,8 @@ void st_computeFctCall(st_Node_t node)
 		ass_fctCallEnd();
 	}
 	
-	freeNodeAll(params);
+	if(params != ST_UNDEFINED)
+		freeNodeAll(params);
 	freeID(node_getChild(node,0)); //id
 }
 

@@ -106,6 +106,7 @@ void ass_fctBegin(char* fctName, int nbParams)
 	{
 		symboleT_pushTable(tabParams[i], (-2-nbParams) + i );
 	}
+	symboleT_setSymboleNumber(0);
 }
 
 void ass_fctEnd(char* fctName)
@@ -205,18 +206,18 @@ void ass_div()
 void ass_and()
 {
 	PRINT_DEBUG();
-	printInst("8 %d %d\n", ADDR_R0, instructionNumber+3); // if(!R0)  goto false;
-	printInst("8 %d %d\n", ADDR_R1, instructionNumber+2); // if(!R1)  goto false;
-	printInst("7 %d\n", instructionNumber+2);             // true:  goto end;
+	printInst("8 %d %d\n", ADDR_R0, instructionNumber+2); // if(!R0)  goto false;
+	printInst("8 %d %d\n", ADDR_R1, instructionNumber+1); // if(!R1)  goto false;
+	printInst("7 %d\n", instructionNumber+1);             // true:  goto end;
 	printInst("6 %d %d\n", ADDR_R0, 0);                   // false: R0 = 0
 }
 
 void ass_or()
 {
 	PRINT_DEBUG();
-	printInst("8 %d %d\n", ADDR_R0, instructionNumber+2); // if(!R0)  goto testR1;
-	printInst("7 %d\n", instructionNumber+3);             // goto end;
-	printInst("8 %d %d\n", ADDR_R1, instructionNumber+2); // if(!R1)  goto end;
+	printInst("8 %d %d\n", ADDR_R0, instructionNumber+1); // if(!R0)  goto testR1;
+	printInst("7 %d\n", instructionNumber+2);             // goto end;
+	printInst("8 %d %d\n", ADDR_R1, instructionNumber+1); // if(!R1)  goto end;
 	printInst("6 %d %d\n", ADDR_R0, 1);                   // R0 = 1
 }
 
@@ -270,8 +271,10 @@ void ass_fctCallParam()
 void ass_fctCallJmp(char* fctName)
 {
 	PRINT_DEBUG();
-	printInst("10 %d\n", ADDR_R1); // R1 = adresse de retour
-	empiler(ADDR_R1);
+	printInst("6 %d %d\n", ADDR_R1, 5);
+	printInst("10 %d\n", ADDR_R0); // R1 = adresse de retour
+	printInst("1 %d %d %d\n", ADDR_R0, ADDR_R0, ADDR_R1);
+	empiler(ADDR_R0);
 	printInst("7 .%s\n", fctName);
 }
 

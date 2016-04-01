@@ -75,7 +75,7 @@ TODO:
 /* ------ DEFINITION DU FICHIER ------ */
 Prg :
 	  Fct Prg
-	  		{ st_node(NT_ROOT, $1, $2); }
+	  		{ $$=st_node(NT_ROOT, $1, $2); }
 	| 		{ $$=ST_UNDEFINED; };
 
 /* ------ DEFINITION DES FONCTIONS ------ */
