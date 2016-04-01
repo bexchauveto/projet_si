@@ -23,6 +23,36 @@
 
   <files xmlns="http://www.xilinx.com/XMLSchema"/>
 
-  <transforms xmlns="http://www.xilinx.com/XMLSchema"/>
+  <transforms xmlns="http://www.xilinx.com/XMLSchema">
+    <transform xil_pn:end_ts="1459500171" xil_pn:name="TRAN_copyInitialToAbstractSimulation" xil_pn:start_ts="1459500171">
+      <status xil_pn:value="SuccessfullyRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1459501413" xil_pn:in_ck="-99368040636024950" xil_pn:name="TRAN_copyAbstractToPostAbstractSimulation" xil_pn:start_ts="1459501516">
+      <status xil_pn:value="ExecutingRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <status xil_pn:value="OutOfDateForOutputs"/>
+      <status xil_pn:value="OutputAdded"/>
+      <status xil_pn:value="OutputRemoved"/>
+      <outfile xil_pn:name="ALU.vhd"/>
+      <outfile xil_pn:name="ALU_test.vhd"/>
+      <outfile xil_pn:name="DataMemBench.vhd"/>
+      <outfile xil_pn:name="DataMemBench_test.vhd"/>
+      <outfile xil_pn:name="InstMemBench.vhd"/>
+      <outfile xil_pn:name="RegisterBench.vhd"/>
+      <outfile xil_pn:name="RegisterBench_test.vhd"/>
+    </transform>
+    <transform xil_pn:end_ts="1459500171" xil_pn:name="TRAN_xawsToSimhdl" xil_pn:prop_ck="-9044832904953873877" xil_pn:start_ts="1459500171">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1459500171" xil_pn:name="TRAN_schematicsToHdlSim" xil_pn:prop_ck="-2793873426928892759" xil_pn:start_ts="1459500171">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1459500171" xil_pn:name="TRAN_regenerateCoresSim" xil_pn:prop_ck="-5936252757182749582" xil_pn:start_ts="1459500171">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+  </transforms>
 
 </generated_project>
