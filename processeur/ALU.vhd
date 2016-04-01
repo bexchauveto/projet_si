@@ -30,10 +30,11 @@ use IEEE.STD_LOGIC_1164.ALL;
 --use UNISIM.VComponents.all;
 
 entity ALU is
-    Port ( A : in  STD_LOGIC_VECTOR (7 downto 0);
-           B : in  STD_LOGIC_VECTOR (7 downto 0);
+	 Generic (SIZE : Natural := 8);
+    Port ( A : in  STD_LOGIC_VECTOR (SIZE-1 downto 0);
+           B : in  STD_LOGIC_VECTOR (SIZE-1 downto 0);
            Ctrl_Alu : in  STD_LOGIC_VECTOR (2 downto 0);
-           S : out  STD_LOGIC_VECTOR (7 downto 0);
+           S : out  STD_LOGIC_VECTOR (SIZE-1 downto 0);
            N : out  STD_LOGIC;
            O : out  STD_LOGIC;
            Z : out  STD_LOGIC;

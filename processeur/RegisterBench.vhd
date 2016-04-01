@@ -1,22 +1,4 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date:    10:57:57 04/01/2016 
--- Design Name: 
--- Module Name:    RegisterBench - Behavioral 
--- Project Name: 
--- Target Devices: 
--- Tool versions: 
--- Description: 
---
--- Dependencies: 
---
--- Revision: 
--- Revision 0.01 - File Created
--- Additional Comments: 
---
-----------------------------------------------------------------------------------
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
@@ -30,21 +12,26 @@ use IEEE.STD_LOGIC_1164.ALL;
 --use UNISIM.VComponents.all;
 
 entity RegisterBench is
+	 Generic (SIZE : Natural := 8);
     Port ( addrA : in  STD_LOGIC_VECTOR (3 downto 0);
            addrB : in  STD_LOGIC_VECTOR (3 downto 0);
            addrW : in  STD_LOGIC_VECTOR (3 downto 0);
            W : in  STD_LOGIC;
-           DATA : in  STD_LOGIC_VECTOR (0 downto 0);
+           DATA : in  STD_LOGIC_VECTOR (SIZE-1 downto 0);
            RST : in  STD_LOGIC;
            CLK : in  STD_LOGIC;
-           QA : out  STD_LOGIC_VECTOR (0 downto 0);
-           QB : out  STD_LOGIC_VECTOR (0 downto 0));
+           QA : out  STD_LOGIC_VECTOR (SIZE-1 downto 0);
+           QB : out  STD_LOGIC_VECTOR (SIZE-1 downto 0));
 end RegisterBench;
 
 architecture Behavioral of RegisterBench is
 
 begin
 
+	regbench : process (CLK) is
+	begin
+		
+	end process;
 
 end Behavioral;
 

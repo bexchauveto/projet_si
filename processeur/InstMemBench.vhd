@@ -30,9 +30,10 @@ use IEEE.STD_LOGIC_1164.ALL;
 --use UNISIM.VComponents.all;
 
 entity InstMemBench is
-    Port ( ADDR : in  STD_LOGIC_VECTOR (7 downto 0);
+	 Generic (SIZE : Natural := 8);
+    Port ( ADDR : in  STD_LOGIC_VECTOR (SIZE-1 downto 0);
            CLK : in  STD_LOGIC;
-           OUT : out  STD_LOGIC_VECTOR (31 downto 0));
+           DOUT : out  STD_LOGIC_VECTOR (31 downto 0));
 end InstMemBench;
 
 architecture Behavioral of InstMemBench is

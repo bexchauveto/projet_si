@@ -8,58 +8,7 @@
 <!-- Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.    -->
 
 <messages>
-<msg type="info" file="ProjectMgmt" num="1061" ><arg fmt="%s" index="1">Parsing VHDL file &quot;/home/laine/Documents/4a/compilo/projet_si/processeur/ALU_test.vhd&quot; into library work</arg>
-</msg>
-
-<msg type="error" file="ProjectMgmt" num="806" >&quot;<arg fmt="%s" index="1">/home/laine/Documents/4a/compilo/projet_si/processeur/ALU_test.vhd</arg>&quot; Line <arg fmt="%d" index="2">70</arg>. <arg fmt="%s" index="3">Syntax error near &quot;&lt;&quot;.</arg>
-</msg>
-
-<msg type="error" file="ProjectMgmt" num="806" >&quot;<arg fmt="%s" index="1">/home/laine/Documents/4a/compilo/projet_si/processeur/ALU_test.vhd</arg>&quot; Line <arg fmt="%d" index="2">87</arg>. <arg fmt="%s" index="3">Syntax error near &quot;&lt;&quot;.</arg>
-</msg>
-
-<msg type="error" file="ProjectMgmt" num="806" >&quot;<arg fmt="%s" index="1">/home/laine/Documents/4a/compilo/projet_si/processeur/ALU_test.vhd</arg>&quot; Line <arg fmt="%d" index="2">89</arg>. <arg fmt="%s" index="3">Syntax error near &quot;&lt;&quot;.</arg>
-</msg>
-
-<msg type="error" file="ProjectMgmt" num="806" >&quot;<arg fmt="%s" index="1">/home/laine/Documents/4a/compilo/projet_si/processeur/ALU_test.vhd</arg>&quot; Line <arg fmt="%d" index="2">102</arg>. <arg fmt="%s" index="3">Syntax error near &quot;&lt;&quot;.</arg>
-</msg>
-
-<msg type="info" file="ProjectMgmt" num="1061" ><arg fmt="%s" index="1">Parsing VHDL file &quot;/home/laine/Documents/4a/compilo/projet_si/processeur/DataMemBench.vhd&quot; into library work</arg>
-</msg>
-
-<msg type="error" file="ProjectMgmt" num="806" >&quot;<arg fmt="%s" index="1">/home/laine/Documents/4a/compilo/projet_si/processeur/DataMemBench.vhd</arg>&quot; Line <arg fmt="%d" index="2">34</arg>. <arg fmt="%s" index="3">Syntax error near &quot;IN&quot;.</arg>
-</msg>
-
-<msg type="error" file="ProjectMgmt" num="806" >&quot;<arg fmt="%s" index="1">/home/laine/Documents/4a/compilo/projet_si/processeur/DataMemBench.vhd</arg>&quot; Line <arg fmt="%d" index="2">38</arg>. <arg fmt="%s" index="3">Syntax error near &quot;OUT&quot;.</arg>
-</msg>
-
-<msg type="info" file="ProjectMgmt" num="1061" ><arg fmt="%s" index="1">Parsing VHDL file &quot;/home/laine/Documents/4a/compilo/projet_si/processeur/DataMemBench_test.vhd&quot; into library work</arg>
-</msg>
-
-<msg type="error" file="ProjectMgmt" num="806" >&quot;<arg fmt="%s" index="1">/home/laine/Documents/4a/compilo/projet_si/processeur/DataMemBench_test.vhd</arg>&quot; Line <arg fmt="%d" index="2">13</arg>. <arg fmt="%s" index="3">Syntax error near &quot;&lt;&quot;.</arg>
-</msg>
-
-<msg type="error" file="ProjectMgmt" num="806" >&quot;<arg fmt="%s" index="1">/home/laine/Documents/4a/compilo/projet_si/processeur/DataMemBench_test.vhd</arg>&quot; Line <arg fmt="%d" index="2">22</arg>. <arg fmt="%s" index="3">Syntax error near &quot;&lt;&quot;.</arg>
-</msg>
-
-<msg type="error" file="ProjectMgmt" num="806" >&quot;<arg fmt="%s" index="1">/home/laine/Documents/4a/compilo/projet_si/processeur/DataMemBench_test.vhd</arg>&quot; Line <arg fmt="%d" index="2">28</arg>. <arg fmt="%s" index="3">Syntax error near &quot;&lt;&quot;.</arg>
-</msg>
-
-<msg type="info" file="ProjectMgmt" num="1061" ><arg fmt="%s" index="1">Parsing VHDL file &quot;/home/laine/Documents/4a/compilo/projet_si/processeur/InstMemBench.vhd&quot; into library work</arg>
-</msg>
-
-<msg type="error" file="ProjectMgmt" num="806" >&quot;<arg fmt="%s" index="1">/home/laine/Documents/4a/compilo/projet_si/processeur/InstMemBench.vhd</arg>&quot; Line <arg fmt="%d" index="2">35</arg>. <arg fmt="%s" index="3">Syntax error near &quot;OUT&quot;.</arg>
-</msg>
-
-<msg type="info" file="ProjectMgmt" num="1061" ><arg fmt="%s" index="1">Parsing VHDL file &quot;/home/laine/Documents/4a/compilo/projet_si/processeur/InstMemBench_test.vhd&quot; into library work</arg>
-</msg>
-
-<msg type="error" file="ProjectMgmt" num="806" >&quot;<arg fmt="%s" index="1">/home/laine/Documents/4a/compilo/projet_si/processeur/InstMemBench_test.vhd</arg>&quot; Line <arg fmt="%d" index="2">13</arg>. <arg fmt="%s" index="3">Syntax error near &quot;&lt;&quot;.</arg>
-</msg>
-
-<msg type="error" file="ProjectMgmt" num="806" >&quot;<arg fmt="%s" index="1">/home/laine/Documents/4a/compilo/projet_si/processeur/InstMemBench_test.vhd</arg>&quot; Line <arg fmt="%d" index="2">22</arg>. <arg fmt="%s" index="3">Syntax error near &quot;&lt;&quot;.</arg>
-</msg>
-
-<msg type="error" file="ProjectMgmt" num="806" >&quot;<arg fmt="%s" index="1">/home/laine/Documents/4a/compilo/projet_si/processeur/InstMemBench_test.vhd</arg>&quot; Line <arg fmt="%d" index="2">28</arg>. <arg fmt="%s" index="3">Syntax error near &quot;&lt;&quot;.</arg>
+<msg type="info" file="ProjectMgmt" num="1061" ><arg fmt="%s" index="1">Parsing VHDL file &quot;/home/laine/Documents/4a/compilo/projet_si/processeur/RegisterBench.vhd&quot; into library work</arg>
 </msg>
 
 </messages>
