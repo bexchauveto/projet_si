@@ -25,6 +25,20 @@ architecture Behavioral of DataMemBench is
 
 begin
 
+	databench : process (CLK) is
+	begin
+		if rising_edge(CLK) then
+			if RST = '0' then
+				
+			else
+				if RW = '1' then
+					-- lecture
+				else
+					-- ecriture
+				end if;
+			end if;
+		end if;
+	end process;
 
 end Behavioral;
 

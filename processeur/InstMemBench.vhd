@@ -12,16 +12,23 @@ use IEEE.STD_LOGIC_1164.ALL;
 --use UNISIM.VComponents.all;
 
 entity InstMemBench is
-	 Generic (SIZE : Natural := 8);
+	 Generic ( SIZE : Natural := 8;
+				  SIZE_DOUT : Natural := 32);
     Port ( ADDR : in  STD_LOGIC_VECTOR (SIZE-1 downto 0);
            CLK : in  STD_LOGIC;
-           DOUT : out  STD_LOGIC_VECTOR (31 downto 0));
+           DOUT : out  STD_LOGIC_VECTOR (SIZE_DOUT-1 downto 0));
 end InstMemBench;
 
 architecture Behavioral of InstMemBench is
 
 begin
 
+	instbench : process (CLK) is
+	begin
+		if rising_edge(CLK) then
+			
+		end if;
+	end process;
 
 end Behavioral;
 
