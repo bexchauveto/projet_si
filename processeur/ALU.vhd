@@ -1,6 +1,6 @@
 ----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
+-- Company: INSA
+-- Engineer: BEX-CHAUVET - LAINE
 -- 
 -- Create Date:    10:42:14 04/01/2016 
 -- Design Name: 
@@ -43,7 +43,43 @@ end ALU;
 
 architecture Behavioral of ALU is
 
+	--Ri is the result register, and Rj and Rk are the operands registers
+	signal Ri, Rj, Rk : STD_LOGIC_VECTOR(SIZE downto 0) := (others => '0');
+
 begin
+
+Rj <= A;
+Rk <= B;
+S <= Ri;
+
+process()
+
+begin
+	case(Ctrl_Alu) is
+		when "001" =>
+			Ri := Rj + Rk;
+		when "010" =>
+			Ri := Rj * Rk;
+		when "011" =>
+			Ri := Rj - Rk;
+		when "100" =>
+			Ri := Rj / Rk;
+		when others =>
+			NULL;
+	end case;
+	if(Ri < '0') then
+		N := '1';
+	end if;
+	if(Ri = '0') then
+		Z := '1';
+	end if;
+	if(Ri(SIZE) /= '0' and Ctrl_Alu = "001") then
+		C := '1';
+	elsif(Ri(SIZE) /= '0') then
+		O := '1';
+	end if;
+
+end;
 
 
 end Behavioral;
