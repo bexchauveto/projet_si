@@ -4,6 +4,7 @@ testyacc
 inter
 compilateur/obj/
 compilateur/dep/
-processeur/_xmsgs/
-processeur/iseconfig/
+processeur/_xmsgs/pn_parser.xmsgs
+processeur/iseconfig/ALU.xreport
 processeur/processeur.gise
+processeur/processeur.xise
