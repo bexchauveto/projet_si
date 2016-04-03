@@ -4,6 +4,6 @@ testyacc
 inter
 compilateur/obj/
 compilateur/dep/
-processeur/_xmsgs
-processeur/iseconfig
+processeur/_xmsgs/
+processeur/iseconfig/
 processeur/processeur.gise
