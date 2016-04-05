@@ -35,8 +35,9 @@ int yyerror(char *s);
 %token <exp> tNBEXP
 %token <string> tID
 
-%type <nodeID> Prg Fct Prototype Params DeclParam SuiteParams 
-%type <nodeID> Bloc Body BlocRet DeclVar SuiteDeclVar DeclVarVar
+%type <integer> PtrsDef
+%type <nodeID> Prg Fct Prototype Params DeclParam SuiteParams Type
+%type <nodeID> Bloc Body BlocRet DeclVar SuiteDeclVar DeclVarVar DeclVarExp
 %type <nodeID> Instruction Expr AppelFct AppelParams SuiteAppelParams While If Return
 
 
@@ -72,6 +73,15 @@ TODO:
 
 %%
 
+/* ------ DEFINITION DIVERSES ------ */
+Type :
+	  tINT PtrsDef
+	  		{ $$=st_type(0, 0, $2); };
+PtrsDef :
+	  tMUL PtrsDef
+	  		{ $$ = $2 + 1; }
+	| 		{ $$ = 0; };
+
 /* ------ DEFINITION DU FICHIER ------ */
 Prg :
 	  Fct Prg
@@ -80,28 +90,37 @@ Prg :
 
 /* ------ DEFINITION DES FONCTIONS ------ */
 Fct : 
-	  Prototype BlocRet 
+	  Prototype Bloc 
+	  		{
+	  			$$ = st_node(NT_FUNCTION, $1, $2);
+	  			error(ERR_WARNING, "reach end of non-void function without return statement", 1);
+	  		}
+	| Prototype BlocRet 
 	  		{ $$ = st_node(NT_FUNCTION, $1, $2); }
 	| Prototype tPTVIR
 			{ $$ = st_node(NT_FUNCTION, $1, ST_UNDEFINED); };
 Prototype : 
-	  tINT tID tPO Params tPF 
+	  Type tID tPO Params tPF 
 	  		{
-	  			st_Node_t type = st_type(0, 0);
 	  			st_Node_t id = st_id($2);
-	  			$$ = st_node(NT_PROTOTYPE, type, id, $4);
+	  			$$ = st_node(NT_PROTOTYPE, $1, id, $4);
 			} ;
 Params : 
 	  DeclParam SuiteParams
 	  		{ $$=st_node(NT_PARAMS, $1, $2); }
 	| 		{ $$=ST_UNDEFINED; };
 DeclParam :
-	  tINT tID 
+	  Type tID 
 	  		{
-	  			st_Node_t type = st_type(0, 0);
 	  			st_Node_t id = st_id($2);
-	  			$$ = st_node(NT_PARAM, type, id);
+	  			$$ = st_node(NT_PARAM, $1, id, ST_UNDEFINED);
 			};
+/*	| Type tID tCO tCF
+			{
+	  			st_Node_t id = st_id($2);
+	  			st_Node_t size = st_exNb(0); // TODO Array Size
+	  			$$ = st_node(NT_PARAM, $1, id, size);
+			};*/
 SuiteParams :
 	  tVIR DeclParam SuiteParams
 	  		{ $$ = st_node(NT_PARAMS, $2, $3); }
@@ -112,9 +131,7 @@ Bloc :
 	  tAO Body tAF
 	  		{ $$ = st_node(NT_BLOC, $2, ST_UNDEFINED); };
 BlocRet : 
-	  tAO Body tAF
-	  		{ $$ = st_node(NT_BLOC, $2, ST_UNDEFINED); }
-	| tAO Body Return tAF
+	  tAO Body Return tAF
 	  		{ $$ = st_node(NT_BLOC, $2, $3); };
 Body : 
 	  Instruction Body
@@ -123,28 +140,32 @@ Body :
 
 /* ------ DEFINITION DES DECLARATIONS ------ */
 DeclVar : 
-	  tINT DeclVarVar SuiteDeclVar
+	  Type DeclVarVar SuiteDeclVar
 	  		{
-	  			st_Node_t type = st_type(0,0);
 	  			st_Node_t d2 = st_node(NT_DECLVAR2, $2, $3);
-	  			$$ = st_node(NT_DECLVAR, type, d2);
+	  			$$ = st_node(NT_DECLVAR, $1, d2);
 	  		};
 SuiteDeclVar : 
 	  tVIR DeclVarVar SuiteDeclVar
 	  		{ $$ = st_node(NT_DECLVAR2, $2, $3); }
 	| 		{ $$=ST_UNDEFINED; };
 DeclVarVar : 
-	  tID
+	  tID DeclVarExp
 	  		{
 	  			st_Node_t id = st_id($1);
-	  			$$ = st_node(NT_DECLVARVAR, id, ST_UNDEFINED);
+	  			$$ = st_node(NT_DECLVARVAR, id, $2, ST_UNDEFINED);
 	  		}
-	| tID tEQ Expr
+	| tID tAO tNB tAF
 			{
 	  			st_Node_t id = st_id($1);
-	  			$$ = st_node(NT_DECLVARVAR, id, $3);
+	  			st_Node_t size = st_exNb($3);
+	  			$$ = st_node(NT_DECLVARVAR, id, ST_UNDEFINED, size);
 	  		};
-
+DeclVarExp :
+	  tEQ Expr
+	  		{ $$=$2; }
+	| 		{ $$=ST_UNDEFINED; };
+	
 
 /* ------ DEFINITION DES INSTRUCTIONS ------ */
 Instruction :

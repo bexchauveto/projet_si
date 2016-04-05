@@ -85,7 +85,7 @@ void ass_progBegin()
 	instructionNumber = 1;
 	printInst("6 %d 0\n", ADDR_STACK); // STACK[0] = 0
 	printInst("6 %d %d\n", ADDR_SP, ADDR_STACK+1); // SP = ADDR_STACK + 1
-	printInst("7 .main\n"); // goto main
+	printInst("7 .main     \n"); // goto main
 }
 
 void ass_progEnd()
@@ -275,7 +275,7 @@ void ass_fctCallJmp(char* fctName)
 	printInst("10 %d\n", ADDR_R0); // R1 = adresse de retour
 	printInst("1 %d %d %d\n", ADDR_R0, ADDR_R0, ADDR_R1);
 	empiler(ADDR_R0);
-	printInst("7 .%s\n", fctName);
+	printInst("7 .%s        \n", fctName);
 }
 
 void ass_fctCallEnd()
@@ -294,7 +294,7 @@ void ass_ifBegin(int numLabel)
 void ass_ifThen(int numLabel)
 {
 	PRINT_DEBUG();
-	char label[10];
+	char label[15];
 	sprintf(label, "%delse",numLabel);
 	labelT_pushTableName(label);
 	printInst("8 %d .%s\n", ADDR_R0, label); // if(!R0) goto else
@@ -303,7 +303,7 @@ void ass_ifThen(int numLabel)
 void ass_ifElse(int numLabel)
 {
 	PRINT_DEBUG();
-	char label[10];
+	char label[15];
 	sprintf(label, "%deif",numLabel);
 	labelT_pushTableName(label);
 	printInst("7 .%s\n", label); // goto ifEnd
@@ -315,7 +315,7 @@ void ass_ifElse(int numLabel)
 void ass_ifEnd(int numLabel)
 {
 	PRINT_DEBUG();
-	char label[10];
+	char label[15];
 	sprintf(label, "%deif",numLabel);
 	labelT_addAddressToLabel(label, instructionNumber);
 }
@@ -323,7 +323,7 @@ void ass_ifEnd(int numLabel)
 void ass_whileBegin(int numLabel)
 {
 	PRINT_DEBUG();
-	char label[10];
+	char label[15];
 	sprintf(label, "%dbwhl",numLabel);
 	labelT_pushTableComplet(label, instructionNumber);
 }
@@ -331,7 +331,7 @@ void ass_whileBegin(int numLabel)
 void ass_whileDo(int numLabel)
 {
 	PRINT_DEBUG();
-	char label[10];
+	char label[15];
 	sprintf(label, "%dewhl",numLabel);
 	labelT_pushTableComplet(label, instructionNumber);
 	printInst("8 %d .%s\n", ADDR_R0, label); // if(!R0) goto whileEnd
@@ -340,7 +340,7 @@ void ass_whileDo(int numLabel)
 void ass_whileEnd(int numLabel)
 {
 	PRINT_DEBUG();
-	char label[10];
+	char label[15];
 	sprintf(label, "%dbwhl",numLabel);
 	printInst("7 .%s\n", label); // goto whileBegin
 	

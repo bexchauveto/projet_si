@@ -35,6 +35,7 @@ typedef struct {
 	AbstractNode _;
 	int type;
 	int flags;
+	int nbPtr;
 } LeafType;
 
 #define NB_CHILDREN_MAX 3
@@ -104,12 +105,13 @@ void freeNb(st_Node_t handler)
 }
 
 //******** Type
-st_Node_t createType(int type, int flags)
+st_Node_t createType(int type, int flags, int nbPtr)
 {
 	LeafType* node = malloc(sizeof(LeafType));
 	if(!node) return node;
 	node->type = type;
 	node->flags = flags;
+	node->nbPtr = nbPtr;
 	return createAN(NT_TYPE, node);
 }
 
@@ -677,9 +679,9 @@ st_Node_t st_createNode(st_NodeType type, st_Node_t n1, st_Node_t n2, st_Node_t 
 
 
 /* --- Feuilles --- */
-st_Node_t st_type(int type, int flags)
+st_Node_t st_type(int type, int flags, int nbPtr)
 {
-	return createType(type,flags);
+	return createType(type,flags,nbPtr);
 }
 
 st_Node_t st_id(char* id)

@@ -12,12 +12,12 @@ typedef enum {
 	NT_FUNCTION, // : prototype, bloc
 	NT_PROTOTYPE, // : type, id, params
 	NT_PARAMS, // : param, next
-	NT_PARAM, // : type, id
+	NT_PARAM, // : type, id, arraySize
 	NT_BLOC, // : belly, foot
 	NT_BODY, // : instruction, next
 	NT_DECLVAR, // : type, vars
 	NT_DECLVAR2, // : var, next
-	NT_DECLVARVAR, // : id, value
+	NT_DECLVARVAR, // : id, value, arraySize
 	NT_EXADD, // : exp1, exp2
 	NT_EXSUB, // : exp1, exp2
 	NT_EXMUL, // : exp1, exp2
@@ -68,7 +68,7 @@ st_Node_t st_createNode(st_NodeType type, st_Node_t n1, st_Node_t n2, st_Node_t 
 
 /* FEUILLES */
 // cree une feuille de l'arbre syntaxique
-st_Node_t st_type(int type, int flags);
+st_Node_t st_type(int type, int flags, int nbPtr);
 st_Node_t st_id(char* id);
 st_Node_t st_exNb(int value);
 
@@ -84,3 +84,5 @@ void st_printTree(st_Node_t node, int indent);
 
 
 #endif // ST_H
+
+
