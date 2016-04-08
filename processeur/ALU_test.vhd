@@ -66,8 +66,8 @@ ARCHITECTURE behavior OF ALU_test IS
    signal C : std_logic;
    -- No clocks detected in port list. Replace <clock> below with 
    -- appropriate port name 
- 
-   constant <clock>_period : time := 10 ns;
+	signal CLK : std_logic;
+   constant CLK_period : time := 10 ns;
  
 BEGIN
  
@@ -82,14 +82,14 @@ BEGIN
           Z => Z,
           C => C
         );
-
-   -- Clock process definitions
-   <clock>_process :process
+		  
+		   -- Clock process definitions
+   CLK_process :process
    begin
-		<clock> <= '0';
-		wait for <clock>_period/2;
-		<clock> <= '1';
-		wait for <clock>_period/2;
+		CLK <= '0';
+		wait for CLK_period/2;
+		CLK <= '1';
+		wait for CLK_period/2;
    end process;
  
 
@@ -97,13 +97,16 @@ BEGIN
    stim_proc: process
    begin		
       -- hold reset state for 100 ns.
-      wait for 100 ns;	
+		A <= "00000010";
+		B <= "00000010";
+		Ctrl_Alu <= "001";
+      --wait for 100 ns;	
 
-      wait for <clock>_period*10;
+      --wait for CLK_period*10;
 
-      -- insert stimulus here 
+			
 
       wait;
    end process;
-
+	
 END;
