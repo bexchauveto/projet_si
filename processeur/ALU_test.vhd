@@ -97,9 +97,9 @@ BEGIN
    stim_proc: process
    begin		
       -- hold reset state for 100 ns.
-		A <= "00000010";
+		A <= "00000001";
 		B <= "00000010";
-		Ctrl_Alu <= "001";
+		Ctrl_Alu <= "010";
       --wait for 100 ns;	
 
       --wait for CLK_period*10;

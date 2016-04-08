@@ -56,7 +56,7 @@ Rj <= b"0"&A;
 Rk <= b"0"&B;
 S <= Ri(SIZE-1 downto 0);
 
-process
+alu : process(Rj, Rk, Ctrl_Alu)
 
 begin
 	case(Ctrl_Alu) is
