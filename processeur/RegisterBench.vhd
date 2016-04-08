@@ -1,6 +1,8 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -33,8 +35,8 @@ architecture Behavioral of RegisterBench is
 	signal memAddrB : STD_LOGIC_VECTOR (SIZE_REG-1 downto 0);
 begin
 	
-	QA <= R(memAddrA);
-	QB <= R(memAddrB);
+	QA <= R(conv_integer(memAddrA));
+	QB <= R(conv_integer(memAddrB));
 	
 	regbench : process (CLK) is
 	begin
@@ -47,7 +49,7 @@ begin
 				memAddrA <= addrA;
 				memAddrB <= addrB;
 				if W = '1' then
-					R(addrW) <= DATA;
+					R(conv_integer(addrW)) <= DATA;
 				end if;
 			end if;
 		end if;
