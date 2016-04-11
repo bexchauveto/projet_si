@@ -1,6 +1,8 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -20,13 +22,17 @@ entity InstMemBench is
 end InstMemBench;
 
 architecture Behavioral of InstMemBench is
-
+	TYPE MEMORY IS ARRAY (0 to (15)) OF STD_LOGIC_VECTOR (SIZE_DOUT-1 downto 0);
+	signal ROM : MEMORY;
+	signal memOut : STD_LOGIC_VECTOR (SIZE_DOUT-1 downto 0);
 begin
+
+	DOUT <= memOut;
 
 	instbench : process (CLK) is
 	begin
 		if rising_edge(CLK) then
-			
+			memOut <= ROM(conv_integer(ADDR));
 		end if;
 	end process;
 

@@ -42,9 +42,7 @@ begin
 	begin
 		if rising_edge(CLK) then
 			if RST = '0' then
-				for i in 0 to (NB_REGISTERS-1) loop
-					R(i) <= (others => '0');
-				end loop;
+				R <= (others => (others => '0'));
 			else
 				memAddrA <= addrA;
 				memAddrB <= addrB;
