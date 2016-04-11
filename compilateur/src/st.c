@@ -29,6 +29,7 @@ typedef struct {
 typedef struct {
 	AbstractNode _;
 	char* id;
+	int line;
 } LeafID;
 
 typedef struct {
