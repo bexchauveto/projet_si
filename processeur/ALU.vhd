@@ -34,10 +34,10 @@ use IEEE.STD_LOGIC_ARITH.ALL;
 
 entity ALU is
 	 Generic (SIZE : Natural := 8);
-    Port ( A : in  STD_LOGIC_VECTOR (SIZE-1 downto 0);
-           B : in  STD_LOGIC_VECTOR (SIZE-1 downto 0);
+    Port ( A : in  IEEE.NUMERIC_STD.SIGNED (SIZE-1 downto 0);
+           B : in  IEEE.NUMERIC_STD.SIGNED (SIZE-1 downto 0);
            Ctrl_Alu : in  STD_LOGIC_VECTOR (2 downto 0);
-           S : out  STD_LOGIC_VECTOR (SIZE-1 downto 0);
+           S : out  IEEE.NUMERIC_STD.SIGNED (SIZE-1 downto 0);
            N : out  STD_LOGIC;
            O : out  STD_LOGIC;
            Z : out  STD_LOGIC;
@@ -47,8 +47,9 @@ end ALU;
 architecture Behavioral of ALU is
 
 	--Ri is the result register, and Rj and Rk are the operands registers
-	signal Ri: STD_LOGIC_VECTOR((2*SIZE)-1 downto 0) := (others => '0');
-	signal Rj, Rk: STD_LOGIC_VECTOR(SIZE downto 0) := (others => '0');
+	signal Ri: IEEE.NUMERIC_STD.SIGNED((2*SIZE)-1 downto 0) := (others => '0');
+	signal Rj, Rk: IEEE.NUMERIC_STD.SIGNED(SIZE downto 0) := (others => '0');
+	--signal Zero : IEEE.NUMERIC_STD.SIGNED(SIZE-1 downto 0) := (others => '0');
 
 begin
 
@@ -67,23 +68,31 @@ begin
 		when "011" => -- Soustraction
 			Ri <= b"0000000"&(Rj - Rk);
 		when "100" => -- Division
-			Ri <= x"00"&(conv_std_logic_vector((conv_integer(Rj)/conv_integer(Rk)), SIZE));
-			--Ri <= Rj / Rk;
+			--Ri <= x"00"&(conv_std_logic_vector((conv_integer(Rj)/conv_integer(Rk)), SIZE));
+			Ri <= b"0000000"&(Rj / Rk);
 		when others =>
 			NULL;
 	end case;
-	N <= Ri(SIZE);
-	if(Ri(SIZE downto 0) = "00000000") then
-		Z <= '1';
-	end if;
-	if(Ri(SIZE) /= '0' and Ctrl_Alu = "001") then
-		C <= '1';
-	elsif(Ri(SIZE) /= '0') then
-		O <= '1';
-	end if;
+	
 
 end process;
 
+flag : process(Ri)
+
+begin
+	O <= '0';
+	Z <= '0';
+	C <= '0';
+	N <= Ri(SIZE-1);
+	if(Ri(SIZE-1 downto 0) = x"00" ) then
+		Z <= '1';
+	end if;
+	if(Ctrl_Alu = "001") then
+		C <= Ri(SIZE);
+	else
+		O <= Ri(SIZE);
+	end if;
+end process;
 
 end Behavioral;
 
