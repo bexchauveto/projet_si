@@ -27,6 +27,9 @@
 --------------------------------------------------------------------------------
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
  
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -41,10 +44,10 @@ ARCHITECTURE behavior OF ALU_test IS
  
     COMPONENT ALU
     PORT(
-         A : IN  std_logic_vector(7 downto 0);
-         B : IN  std_logic_vector(7 downto 0);
+         A : IN  ieee.numeric_std.signed(7 downto 0);
+         B : IN  ieee.numeric_std.signed(7 downto 0);
          Ctrl_Alu : IN  std_logic_vector(2 downto 0);
-         S : OUT  std_logic_vector(7 downto 0);
+         S : OUT  ieee.numeric_std.signed(7 downto 0);
          N : OUT  std_logic;
          O : OUT  std_logic;
          Z : OUT  std_logic;
@@ -54,12 +57,12 @@ ARCHITECTURE behavior OF ALU_test IS
     
 
    --Inputs
-   signal A : std_logic_vector(7 downto 0) := (others => '0');
-   signal B : std_logic_vector(7 downto 0) := (others => '0');
+   signal A : ieee.numeric_std.signed(7 downto 0) := (others => '0');
+   signal B : ieee.numeric_std.signed(7 downto 0) := (others => '0');
    signal Ctrl_Alu : std_logic_vector(2 downto 0) := (others => '0');
 
  	--Outputs
-   signal S : std_logic_vector(7 downto 0);
+   signal S : ieee.numeric_std.signed(7 downto 0);
    signal N : std_logic;
    signal O : std_logic;
    signal Z : std_logic;
@@ -97,9 +100,9 @@ BEGIN
    stim_proc: process
    begin		
       -- hold reset state for 100 ns.
-		A <= "00000001";
-		B <= "00000010";
-		Ctrl_Alu <= "010";
+		A <= "00000000";
+		B <= "00000000";
+		Ctrl_Alu <= "001";
       --wait for 100 ns;	
 
       --wait for CLK_period*10;
