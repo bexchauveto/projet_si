@@ -9,8 +9,10 @@
 #include "error.h"
 
 
+extern int yylineno;
+
 int yylex();
-int yyerror(char *s);	
+void yyerror(const char *s);	
 
 
 
@@ -93,7 +95,7 @@ Fct :
 	  Prototype Bloc 
 	  		{
 	  			$$ = st_node(NT_FUNCTION, $1, $2);
-	  			error(ERR_WARNING, "reach end of non-void function without return statement", 1);
+	  			error(ERR_WARNING, "reach end of non-void function without return statement", yylineno);
 	  		}
 	| Prototype BlocRet 
 	  		{ $$ = st_node(NT_FUNCTION, $1, $2); }
@@ -102,7 +104,7 @@ Fct :
 Prototype : 
 	  Type tID tPO Params tPF 
 	  		{
-	  			st_Node_t id = st_id($2);
+	  			st_Node_t id = st_id($2, yylineno);
 	  			$$ = st_node(NT_PROTOTYPE, $1, id, $4);
 			} ;
 Params : 
@@ -112,12 +114,12 @@ Params :
 DeclParam :
 	  Type tID 
 	  		{
-	  			st_Node_t id = st_id($2);
+	  			st_Node_t id = st_id($2, yylineno);
 	  			$$ = st_node(NT_PARAM, $1, id, ST_UNDEFINED);
 			};
 /*	| Type tID tCO tCF
 			{
-	  			st_Node_t id = st_id($2);
+	  			st_Node_t id = st_id($2, yylineno);
 	  			st_Node_t size = st_exNb(0); // TODO Array Size
 	  			$$ = st_node(NT_PARAM, $1, id, size);
 			};*/
@@ -152,12 +154,12 @@ SuiteDeclVar :
 DeclVarVar : 
 	  tID DeclVarExp
 	  		{
-	  			st_Node_t id = st_id($1);
+	  			st_Node_t id = st_id($1, yylineno);
 	  			$$ = st_node(NT_DECLVARVAR, id, $2, ST_UNDEFINED);
 	  		}
-	| tID tAO tNB tAF
+	| tID tCO tNB tCF
 			{
-	  			st_Node_t id = st_id($1);
+	  			st_Node_t id = st_id($1, yylineno);
 	  			st_Node_t size = st_exNb($3);
 	  			$$ = st_node(NT_DECLVARVAR, id, ST_UNDEFINED, size);
 	  		};
@@ -221,7 +223,7 @@ Expr :
 			{ $$ = st_node(NT_EXEQU, $1, $3); }
 	| tID tEQ Expr
 	  		{
-	  			st_Node_t id = st_id($1);
+	  			st_Node_t id = st_id($1, yylineno);
 	  			$$ = st_node(NT_EXAFFECT, id, $3);
 			}
 	| Expr tCO Expr tCF
@@ -230,7 +232,7 @@ Expr :
 			{ $$ = st_node(NT_EXDEREF,$2); }
 	| tREF tID
 			{
-				st_Node_t id = st_id($2);
+				st_Node_t id = st_id($2, yylineno);
 				$$ = st_node(NT_EXREF,id);
 			}
 	| AppelFct
@@ -240,11 +242,11 @@ Expr :
 	| tNBEXP
 	  		{ $$ = st_exNb($1); }
 	| tID
-	  		{ $$ = st_id($1); };
+	  		{ $$ = st_id($1, yylineno); };
 AppelFct : 
 	  tID tPO AppelParams tPF
 	  		{
-	  			st_Node_t id = st_id($1);
+	  			st_Node_t id = st_id($1, yylineno);
 	  			$$ = st_node(NT_FCTCALL, id, $3);
 			};
 AppelParams : 
@@ -262,22 +264,29 @@ SuiteAppelParams :
 
 %%
 
-int yyerror(char* s)
+void yyerror(const char* s)
 {
-	error(ERR_FATAL, s, 1);
+	error(ERR_FATAL, s, yylineno);
 }
 
 
 int main(int argc, char * argv[])
 {
+	if(argc < 2)
+	{
+		printf("Usage : %s [OUTPUT_FILE] < [INPUT_FILE] \n", argv[0]);
+		return -1;
+	}
 	// --- Lecture du fichier
 	yyparse();
 	//st_printTree(0,0);
 	
 	// --- Compilation
+	
 	FILE * file = fopen(argv[1], "w");
 	if(file == NULL)
 	{
+		printf("\Error : Cannot open output file.\n");
 		return -1;
 	}
 	ass_setFile(file);

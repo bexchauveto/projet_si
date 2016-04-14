@@ -14,7 +14,7 @@ void ass_fctBegin(char* fctName, int nbParams);
 void ass_fctEnd(char* fctName);
 void ass_blocBegin();
 void ass_blocEnd();
-void ass_declVar(char* varName);
+void ass_declVar(char* varName, int arraySize);
 void ass_ldr(char* varName, int reg);
 void ass_str(char* varName);
 void ass_ld(int value, int reg);

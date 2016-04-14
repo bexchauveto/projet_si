@@ -42,7 +42,7 @@ void linker_readFileAndReplaceLabel(FILE * file)
 			fscanf(file,"%s", label);
 			addrLabel = labelT_seekAddressByName(label);
 			if(addrLabel == -1)
-				errorSymbol(ERR_MINOR, "undefined reference to %s", label, 0);
+				errorSymbol(ERR_MINOR, "undefined reference to %s", label, -1);
 			fseek(file, -(strlen(label)+1), SEEK_CUR);
 			fprintf(file, "%*d",(int)(strlen(label)+1),addrLabel);
 		}

@@ -122,11 +122,12 @@ void freeType(st_Node_t handler)
 }
 
 //******** ID
-st_Node_t createID(char* id)
+st_Node_t createID(char* id, int line)
 {
 	LeafID* node = malloc(sizeof(LeafID));
 	if(!node) return node;
 	node->id = id;
+	node->line = line;
 	return createAN(NT_ID, node);
 }
 
@@ -134,6 +135,12 @@ char* id_getName(st_Node_t node)
 {
 	LeafID* id = (LeafID*) node;
 	return id->id;
+}
+
+int id_getLine(st_Node_t node)
+{
+	LeafID* id = (LeafID*) node;
+	return id->line;
 }
 
 void freeID(st_Node_t handler)
@@ -304,19 +311,19 @@ void st_computeExpression(st_Node_t node, int destination)
 			ass_deref();
 			break;
 		case NT_EXREF:
-			ass_ref(id_getName(node_getChild(node,0)), destination);
+			ass_ref(id_getName(node_getChild(node,0)), destination); // error? (from ass.c)
 			freeID(node_getChild(node,0));
 			break;
 		case NT_EXAFFECT:
 			st_computeExpression(node_getChild(node,1), 0);
-			ass_str(id_getName(node_getChild(node,0))); // error?
+			ass_str(id_getName(node_getChild(node,0))); // error? (from ass.c)
 			freeID(node_getChild(node,0));
 			break;
 		case NT_FCTCALL:
 			st_computeFctCall(node);
 			break;
 		case NT_ID:
-			ass_ldr(id_getName(node), destination);
+			ass_ldr(id_getName(node), destination); // error? (from ass.c)
 			freeID(node);
 			return;
 		case NT_EXNB:
@@ -335,10 +342,11 @@ void st_computeFctCall(st_Node_t node)
 	
 	// --- Compute function name
 	char* fctName = id_getName(node_getChild(node,0));
+	int fctLine = id_getLine(node_getChild(node,0));
 	int nbParams = funT_getNbParamsByFunName(fctName);
 	if(nbParams == -1)
 	{
-		errorSymbol(ERR_FATAL, "the function %s is undefined", fctName, 0);
+		errorSymbol(ERR_FATAL, "the function %s is undefined", fctName, fctLine);
 	}
 	
 	// --- Compute params
@@ -352,7 +360,7 @@ void st_computeFctCall(st_Node_t node)
 		nbParams--;
 	}
 	if(nbParams != 0)
-		errorSymbol(ERR_FATAL, "wrong number of parameters for the function %s", fctName, 0);
+		errorSymbol(ERR_FATAL, "wrong number of parameters for the function %s", fctName, fctLine);
 	
 	// --- Compute function call
 	if(!strcmp(fctName, "print"))
@@ -415,9 +423,16 @@ void st_computeDeclVar(st_Node_t node)
 			st_computeExpression(node_getChild(var,1), 0);
 			node_setChild(var,1,ST_UNDEFINED);
 		}
+		// --- Compute Arrays
+		int arraySize = 1;
+		if(node_getChild(var,2) != ST_UNDEFINED)
+		{
+			arraySize = nb_getValue(node_getChild(var,2));
+		}
+		
 		// --- Compute ID
 		char* varName = id_getName(node_getChild(var,0));
-		ass_declVar(varName);
+		ass_declVar(varName, arraySize);
 		
 		declVar = (Node*) node_getChild(declVar,1);
 	}
@@ -685,9 +700,9 @@ st_Node_t st_type(int type, int flags, int nbPtr)
 	return createType(type,flags,nbPtr);
 }
 
-st_Node_t st_id(char* id)
+st_Node_t st_id(char* id, int line)
 {
-	return createID(id);
+	return createID(id, line);
 }
 
 st_Node_t st_exNb(int val)

@@ -7,37 +7,14 @@
 
 
 
-static int line = 1;
+static int currentLine = 1;
 static int warningOccured = 0;
 static int errorOccured = 0;
 
 
 
 
-void error(ErrorType type, char* message, int printLine)
-{
-	switch(type)
-	{
-		case ERR_WARNING:
-			warningOccured++;
-			printf("warning: ");
-			break;
-		case ERR_MINOR:
-		case ERR_FATAL:
-			errorOccured++;
-			printf("error  : ");
-			break;
-		default:
-			break;
-	}
-	if(printLine)
-		printf("line %d: ", line);
-	printf("%s\n", message);
-	if(type == ERR_FATAL)
-		exit(0);
-}
-
-void errorLine(ErrorType type, char* message, int line)
+void error(ErrorType type, const char* message, int line)
 {
 	switch(type)
 	{
@@ -59,7 +36,7 @@ void errorLine(ErrorType type, char* message, int line)
 		exit(0);
 }
 
-void errorSymbol(ErrorType type, char* message, char* symbolName, int printLine)
+void errorSymbol(ErrorType type, const char* message, char* symbolName, int line)
 {
 	switch(type)
 	{
@@ -75,31 +52,8 @@ void errorSymbol(ErrorType type, char* message, char* symbolName, int printLine)
 		default:
 			break;
 	}
-	if(printLine)
+	if(line > 0)
 		printf("line %d: ", line);
-	printf(message, symbolName);
-	printf("\n");
-	if(type == ERR_FATAL)
-		exit(0);
-}
-
-void errorSymbolLine(ErrorType type, char* message, char* symbolName, int line)
-{
-	switch(type)
-	{
-		case ERR_WARNING:
-			warningOccured++;
-			printf("warning: ");
-			break;
-		case ERR_MINOR:
-		case ERR_FATAL:
-			errorOccured++;
-			printf("error  : ");
-			break;
-		default:
-			break;
-	}
-	printf("line %d: ", line);
 	printf(message, symbolName);
 	printf("\n");
 	if(type == ERR_FATAL)
@@ -120,7 +74,7 @@ int getNbWarning()
 
 void err_newLine()
 {
-	line++;
+	currentLine++;
 }
 
 

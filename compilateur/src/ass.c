@@ -131,12 +131,21 @@ void ass_blocEnd()
 	symboleT_endBloc();
 }
 
-void ass_declVar(char* varName)
+void ass_declVar(char* varName, int arraySize)
 {
+	// TODO gérer les tableaux
 	PRINT_DEBUG();
 	int addr = symboleT_getSymboleNumber();
 	symboleT_pushTable(varName, addr);
 	empiler(ADDR_R0); // empiler varName
+	// traiter les tableaux
+	/*
+	for(int i = 1; i < arraySize; i++)
+	{
+		symboleT_pushTable("", addr);
+		empiler(ADDR_R0); // empiler varName
+	}
+	*/
 }
 
 void ass_ldr(char* varName, int reg)
@@ -144,7 +153,7 @@ void ass_ldr(char* varName, int reg)
 	PRINT_DEBUG();
 	int addr = symboleT_seekAddressByName(varName);
 	if(addr == -1)
-		errorSymbol(ERR_FATAL, "the variable %s is undeclared", varName, 0);
+		errorSymbol(ERR_FATAL, "the variable %s is undeclared", varName, -1);
 	printInst("6 %d %d\n", ADDR_R0 + reg, addr); // reg = addr
 	printInst("1 %d %d %d\n", ADDR_R0 + reg, ADDR_R0 + reg, ADDR_CONTEXT); // addr += CONTEXT
 	printInst("D %d %d\n", ADDR_R0 + reg, ADDR_R0 + reg); // reg = *addr
@@ -155,7 +164,7 @@ void ass_str(char* varName)
 	PRINT_DEBUG();
 	int addr = symboleT_seekAddressByName(varName);
 	if(addr == -1)
-		errorSymbol(ERR_FATAL, "the variable %s is undeclared", varName, 0);
+		errorSymbol(ERR_FATAL, "the variable %s is undeclared", varName, -1);
 	printInst("6 %d %d\n", ADDR_R1, addr); // R1 = addr
 	printInst("1 %d %d %d\n", ADDR_R1, ADDR_R1, ADDR_CONTEXT); // addr += CONTEXT
 	printInst("E %d %d\n", ADDR_R1, ADDR_R0); // *addr = R0
@@ -250,7 +259,7 @@ void ass_ref(char* varName, int reg)
 	PRINT_DEBUG();
 	int addr = symboleT_seekAddressByName(varName);
 	if(addr == -1)
-		errorSymbol(ERR_FATAL, "the variable %s is undeclared", varName, 0);
+		errorSymbol(ERR_FATAL, "the variable %s is undeclared", varName, -1);
 	printInst("6 %d %d\n", ADDR_R0+reg, addr); // reg = addr
 	printInst("1 %d %d %d\n", ADDR_R0+reg, ADDR_R0+reg, ADDR_CONTEXT); // addr += CONTEXT
 }

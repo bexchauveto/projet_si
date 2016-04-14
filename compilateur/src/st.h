@@ -69,7 +69,7 @@ st_Node_t st_createNode(st_NodeType type, st_Node_t n1, st_Node_t n2, st_Node_t 
 /* FEUILLES */
 // cree une feuille de l'arbre syntaxique
 st_Node_t st_type(int type, int flags, int nbPtr);
-st_Node_t st_id(char* id);
+st_Node_t st_id(char* id, int line);
 st_Node_t st_exNb(int value);
 
 
