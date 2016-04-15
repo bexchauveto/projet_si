@@ -2,9 +2,9 @@
 -- Company: 
 -- Engineer:
 --
--- Create Date:   10:42:53 04/01/2016
+-- Create Date:   11:33:23 04/08/2016
 -- Design Name:   
--- Module Name:   /home/laine/Documents/4a/compilo/projet_si/processeur/ALU_test.vhd
+-- Module Name:   /home/irobire/projet_si/projet_si/processeur/gtest.vhd
 -- Project Name:  processeur
 -- Target Device:  
 -- Tool versions:  
@@ -27,27 +27,24 @@
 --------------------------------------------------------------------------------
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
-use IEEE.NUMERIC_STD.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
  
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
 --USE ieee.numeric_std.ALL;
  
-ENTITY ALU_test IS
-END ALU_test;
+ENTITY gtest IS
+END gtest;
  
-ARCHITECTURE behavior OF ALU_test IS 
+ARCHITECTURE behavior OF gtest IS 
  
     -- Component Declaration for the Unit Under Test (UUT)
  
     COMPONENT ALU
     PORT(
-         A : IN  ieee.numeric_std.signed(7 downto 0);
-         B : IN  ieee.numeric_std.signed(7 downto 0);
+         A : IN  std_logic_vector(7 downto 0);
+         B : IN  std_logic_vector(7 downto 0);
          Ctrl_Alu : IN  std_logic_vector(2 downto 0);
-         S : OUT  ieee.numeric_std.signed(7 downto 0);
+         S : OUT  std_logic_vector(7 downto 0);
          N : OUT  std_logic;
          O : OUT  std_logic;
          Z : OUT  std_logic;
@@ -57,20 +54,20 @@ ARCHITECTURE behavior OF ALU_test IS
     
 
    --Inputs
-   signal A : ieee.numeric_std.signed(7 downto 0) := (others => '0');
-   signal B : ieee.numeric_std.signed(7 downto 0) := (others => '0');
+   signal A : std_logic_vector(7 downto 0) := (others => '0');
+   signal B : std_logic_vector(7 downto 0) := (others => '0');
    signal Ctrl_Alu : std_logic_vector(2 downto 0) := (others => '0');
 
  	--Outputs
-   signal S : ieee.numeric_std.signed(7 downto 0);
+   signal S : std_logic_vector(7 downto 0);
    signal N : std_logic;
    signal O : std_logic;
    signal Z : std_logic;
    signal C : std_logic;
    -- No clocks detected in port list. Replace <clock> below with 
    -- appropriate port name 
-	signal CLK : std_logic;
-   constant CLK_period : time := 10 ns;
+ 
+   constant <clock>_period : time := 10 ns;
  
 BEGIN
  
@@ -85,14 +82,14 @@ BEGIN
           Z => Z,
           C => C
         );
-		  
-		   -- Clock process definitions
-   CLK_process :process
+
+   -- Clock process definitions
+   <clock>_process :process
    begin
-		CLK <= '0';
-		wait for CLK_period/2;
-		CLK <= '1';
-		wait for CLK_period/2;
+		<clock> <= '0';
+		wait for <clock>_period/2;
+		<clock> <= '1';
+		wait for <clock>_period/2;
    end process;
  
 
@@ -100,16 +97,13 @@ BEGIN
    stim_proc: process
    begin		
       -- hold reset state for 100 ns.
-		A <= "00000000", "00000001" after 50ns, "11111000" after 100ns;
-		B <= "00000000", "00000001" after 50ns, "11111111" after 100ns;
-		Ctrl_Alu <= "001", "011" after 100ns, "010" after 150ns, "100" after 200ns, "001" after 250ns;
-      --wait for 100 ns;	
+      wait for 100 ns;	
 
-      --wait for CLK_period*10;
+      wait for <clock>_period*10;
 
-			
+      -- insert stimulus here 
 
       wait;
    end process;
-	
+
 END;
