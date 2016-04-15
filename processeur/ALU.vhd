@@ -49,7 +49,6 @@ architecture Behavioral of ALU is
 	--Ri is the result register, and Rj and Rk are the operands registers
 	signal Ri: IEEE.NUMERIC_STD.SIGNED((2*SIZE)-1 downto 0) := (others => '0');
 	signal Rj, Rk: IEEE.NUMERIC_STD.SIGNED(SIZE downto 0) := (others => '0');
-	--signal Zero : IEEE.NUMERIC_STD.SIGNED(SIZE-1 downto 0) := (others => '0');
 
 begin
 
@@ -68,7 +67,6 @@ begin
 		when "011" => -- Soustraction
 			Ri <= b"0000000"&(Rj - Rk);
 		when "100" => -- Division
-			--Ri <= x"00"&(conv_std_logic_vector((conv_integer(Rj)/conv_integer(Rk)), SIZE));
 			Ri <= b"0000000"&(Rj / Rk);
 		when others =>
 			NULL;
