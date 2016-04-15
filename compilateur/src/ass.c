@@ -133,19 +133,16 @@ void ass_blocEnd()
 
 void ass_declVar(char* varName, int arraySize)
 {
-	// TODO gérer les tableaux
 	PRINT_DEBUG();
 	int addr = symboleT_getSymboleNumber();
 	symboleT_pushTable(varName, addr);
 	empiler(ADDR_R0); // empiler varName
 	// traiter les tableaux
-	/*
 	for(int i = 1; i < arraySize; i++)
 	{
 		symboleT_pushTable("", addr);
 		empiler(ADDR_R0); // empiler varName
 	}
-	*/
 }
 
 void ass_ldr(char* varName, int reg)
