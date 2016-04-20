@@ -53,8 +53,8 @@ void yyerror(const char *s);
 %left tINF tINFEQ tSUP tSUPEQ
 %left tPLUS tMOINS
 %left tMUL tDIV
-%right tNOT tREF DEREFERENCE
-%left tCO tCF
+%right tNOT tREF SIGNE DEREFERENCE
+%left tCO tCF tPO tPF
 
 
 
@@ -117,12 +117,6 @@ DeclParam :
 	  			st_Node_t id = st_id($2, yylineno);
 	  			$$ = st_node(NT_PARAM, $1, id, ST_UNDEFINED);
 			};
-/*	| Type tID tCO tCF
-			{
-	  			st_Node_t id = st_id($2, yylineno);
-	  			st_Node_t size = st_exNb(0); // TODO Array Size
-	  			$$ = st_node(NT_PARAM, $1, id, size);
-			};*/
 SuiteParams :
 	  tVIR DeclParam SuiteParams
 	  		{ $$ = st_node(NT_PARAMS, $2, $3); }
@@ -171,7 +165,9 @@ DeclVarExp :
 
 /* ------ DEFINITION DES INSTRUCTIONS ------ */
 Instruction :
-	  Expr tPTVIR
+	  tPTVIR
+			{ $$=ST_UNDEFINED; }
+	| Expr tPTVIR
 	  		{ $$ = $1; }
 	| DeclVar tPTVIR
 			{ $$ = $1; }
@@ -195,6 +191,10 @@ Return :
 Expr : 
 	  tPO Expr tPF 
 	  		{ $$ = $2; }
+	| tPLUS Expr %prec SIGNE
+	  		{ $$ = $2; }
+	| tMOINS Expr %prec SIGNE
+	  		{ $$ = st_node(NT_EXSUB, st_exNb(0), $2); }
 	| Expr tPLUS Expr
 	  		{ $$ = st_node(NT_EXADD, $1, $3); }
 	| Expr tMOINS Expr
@@ -239,8 +239,10 @@ Expr :
 LValue : 
 	  tID
 	  		{ $$ = st_id($1, yylineno); }
-	| tMUL Expr %prec DEREFERENCE
+	| tMUL LValue %prec DEREFERENCE       /* pour éviter un conflit */
 			{ $$ = st_node(NT_EXDEREF,$2); }
+	| tMUL tPO Expr tPF %prec DEREFERENCE /* pour éviter un conflit */
+			{ $$ = st_node(NT_EXDEREF,$3); }
 	| tID tCO Expr tCF
 			{
 				st_Node_t id = st_id($1, yylineno);
@@ -293,7 +295,7 @@ int main(int argc, char * argv[])
 		return -1;
 	}
 	ass_setFile(file);
-	st_compute(0);
+	st_computeTree();
 	fflush(file);
 	fclose(file);
 	

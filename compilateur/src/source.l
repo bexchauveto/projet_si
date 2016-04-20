@@ -13,6 +13,9 @@
 NB 		[0-9]+
 TEXT 	[a-zA-Z_][a-zA-Z0-9_]*
 EXP		[0-9]+[eE][+-]?[0-9]+
+COMM	"/*"([^*]|(\*[^/]))*"*/"
+COM_LINE "//"[^\n]*
+
 
 %%
 "("		return tPO;
@@ -60,6 +63,8 @@ EXP		[0-9]+[eE][+-]?[0-9]+
 			yylval.exp = atof(yytext);
 			return tNBEXP;
 		}
+{COMM}	;
+{COM_LINE} ;
 . ;
 
 

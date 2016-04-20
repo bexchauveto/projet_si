@@ -238,27 +238,43 @@ void st_computeExpression(st_Node_t node, int destination);
 void st_computeFctCall(st_Node_t node);
 void st_computeFunction(st_Node_t node);
 void st_computeDeclVar(st_Node_t node);
+void st_compute(st_Node_t node);
+
+
+void st_computeTree()
+{
+	st_compute(treeRoot);
+}
+
+
 
 
 void st_computeRef(st_Node_t node, int destination)
 {
 	switch(getNodeType(node))
 	{
-		case NT_ID:
-			ass_ref(id_getName(node), destination); // error? (from ass.c)
+		case NT_ID: {
+			char* varName = id_getName(node);
+			if(symboleT_seekAddressByName(varName) == -1)
+				errorSymbol(ERR_FATAL, "the variable %s is undeclared", varName, id_getLine(node));
+			ass_ref(varName, destination);
 			freeID(node);
-			break;
+			break; }
 		case NT_EXDEREF:
 			st_computeExpression(node_getChild(node,0), 0);
 			freeNode(node);
 			break;
-		case NT_EXTAB:
+		case NT_EXTAB: {
+			char* varName = id_getName(node_getChild(node,0));
+			int varLine = id_getLine(node_getChild(node,0));
+			if(symboleT_seekAddressByName(varName) == -1)
+				errorSymbol(ERR_FATAL, "the variable %s is undeclared", varName, varLine);
 			st_computeExpression(node_getChild(node,1), 0);
 			node_setChild(node, 1, ST_UNDEFINED);
-			ass_ref(id_getName(node_getChild(node,0)), 1); // error? (from ass.c)
+			ass_ref(varName, 1);
 			ass_add();
 			freeNodeAll(node);
-			break;
+			break; }
 		default:
 			break;
 	}
@@ -268,6 +284,24 @@ void st_computeExpression(st_Node_t node, int destination)
 {
 	if(node == ST_UNDEFINED)
 		return;
+	
+	if(getNodeType(node)==NT_EXOR)
+	{
+		st_Node_t op1 = node_getChild(node,0);
+		st_Node_t op2 = node_getChild(node,1);
+		st_compute(st_node(NT_IF, op1, createNb(1), op2));
+		freeNode(node);
+		return;
+	}
+	else if(getNodeType(node)==NT_EXAND)
+	{
+		st_Node_t op1 = node_getChild(node,0);
+		st_Node_t op2 = node_getChild(node,1);
+		st_compute(st_node(NT_IF, op1, op2, createNb(0)));
+		freeNode(node);
+		return;
+	}
+	
 	
 	if(isNodeExpression2Op(node))
 	{
@@ -362,10 +396,13 @@ void st_computeExpression(st_Node_t node, int destination)
 		case NT_FCTCALL:
 			st_computeFctCall(node);
 			break;
-		case NT_ID:
-			ass_ldr(id_getName(node), destination); // error? (from ass.c)
+		case NT_ID: {
+			char* varName = id_getName(node);
+			if(symboleT_seekAddressByName(varName) == -1)
+				errorSymbol(ERR_FATAL, "the variable %s is undeclared", varName, id_getLine(node));
+			ass_ldr(varName, destination); // error? (from ass.c)
 			freeID(node);
-			return;
+			return; }
 		case NT_EXNB:
 			ass_ld(nb_getValue(node), destination);
 			freeNb(node);
@@ -478,9 +515,6 @@ void st_computeDeclVar(st_Node_t node)
 	}
 }
 
-
-
-
 void st_compute(st_Node_t node)
 {
 	if(firstCompute)
@@ -490,11 +524,7 @@ void st_compute(st_Node_t node)
 	}
 	
 	if(node == ST_UNDEFINED)
-	{
-		if(treeRoot == ST_UNDEFINED)
-			return; // error
-		node = treeRoot;
-	}
+		return;
 	
 	switch(getNodeType(node))
 	{
@@ -535,27 +565,25 @@ void st_compute(st_Node_t node)
 			st_computeDeclVar(node);
 			freeNodeAll(node);
 			break;
-		case NT_WHILE:
-			ass_whileBegin(labelNumber);
-			st_computeExpression(node_getChild(node,0), 0);
-			ass_whileDo(labelNumber);
-			if(node_getChild(node,1) != ST_UNDEFINED)
-				st_compute(node_getChild(node,1));
-			ass_whileEnd(labelNumber);
+		case NT_WHILE: {
+			int numlabel = labelNumber;
 			labelNumber++;
+			ass_whileBegin(numlabel);
+			st_computeExpression(node_getChild(node,0), 0);
+			ass_whileDo(numlabel);
+			st_compute(node_getChild(node,1));
+			ass_whileEnd(numlabel);
 			freeNode(node);
-			break;
+			break;}
 		case NT_IF: {
 			int numlabel = labelNumber;
 			labelNumber++;
 			ass_ifBegin(numlabel);
 			st_computeExpression(node_getChild(node,0), 0);
 			ass_ifThen(numlabel);
-			if(node_getChild(node,1) != ST_UNDEFINED)
-				st_compute(node_getChild(node,1));
+			st_compute(node_getChild(node,1));
 			ass_ifElse(numlabel);
-			if(node_getChild(node,2) != ST_UNDEFINED)
-				st_compute(node_getChild(node,2));
+			st_compute(node_getChild(node,2));
 			ass_ifEnd(numlabel);
 			freeNode(node);
 			break; }
@@ -569,6 +597,8 @@ void st_compute(st_Node_t node)
 			break;
 	}
 }
+
+
 
 
 
@@ -617,7 +647,7 @@ void st_printTree(st_Node_t node, int indent)
 
 st_Node_t st_optimizeSimpleExpression(st_Node_t node)
 {
-	st_Node_t res;
+	st_Node_t res = node;
 	int op1, op2;
 	
 	if(getNodeType(node_getChild(node,0))!=NT_EXNB ||
@@ -682,23 +712,33 @@ st_Node_t st_optimizeInstruction(st_Node_t node)
 
 st_Node_t st_optimizeBloc(st_Node_t node)
 {
-	for(Node* inst = (Node*) node_getChild(node,0); inst != ST_UNDEFINED;)
+	Node* inst = (Node*) node_getChild(node,0);
+	Node* lastInst = ST_UNDEFINED;
+	while(inst != ST_UNDEFINED)
 	{
 		st_Node_t newInst = st_optimizeInstruction(node_getChild(inst,0));
 		node_setChild(inst,0,newInst);
-		inst = (Node*) node_getChild(inst,1);
+		if(newInst == ST_UNDEFINED)
+		{
+			Node* tmp = inst;
+			inst = (Node*) node_getChild(inst,1);
+			node_setChild(tmp, 1, ST_UNDEFINED);
+			freeNodeAll(tmp);
+			if(lastInst != ST_UNDEFINED)
+				node_setChild(lastInst, 1, inst);
+		}
+		else
+		{
+			lastInst = inst;
+			inst = (Node*) node_getChild(inst,1);
+		}
 	}
 	return node;
 }
 
 st_Node_t st_optimize(st_Node_t node)
 {
-	if(node == ST_UNDEFINED)
-	{
-		if(treeRoot == ST_UNDEFINED)
-			return ST_UNDEFINED; // error
-		node = treeRoot;
-	}
+	st_Node_t res = node;
 	
 	if(isNodeExpression2Op(node) || getNodeType(node)==NT_EXNOT)
 		node = st_optimizeSimpleExpression(node);
@@ -708,6 +748,33 @@ st_Node_t st_optimize(st_Node_t node)
 		case NT_BLOC:
 			node = st_optimizeBloc(node);
 			break;
+		case NT_WHILE:
+			if(getNodeType(node_getChild(node,0)) == NT_EXNB)
+			{
+				if(nb_getValue(node_getChild(node,0)) == 0)
+				{
+					res = ST_UNDEFINED;
+					freeNodeAll(node);
+				}
+			}
+			return res;
+		case NT_IF:
+			if(getNodeType(node_getChild(node,0)) == NT_EXNB)
+			{
+				if(nb_getValue(node_getChild(node,0)) == 0)
+				{
+					res = node_getChild(node,2);
+					node_setChild(node,2,ST_UNDEFINED);
+					freeNodeAll(node);
+				}
+				else
+				{
+					res = node_getChild(node,1);
+					node_setChild(node,1,ST_UNDEFINED);
+					freeNodeAll(node);
+				}
+			}
+			return res;
 		default:
 			break;
 	}
