@@ -75,7 +75,7 @@ st_NodeType getNodeType(st_Node_t handler)
 int isNodeExpression2Op(st_Node_t node)
 {
 	st_NodeType type = getNodeType(node);
-	return type >= NT_EXADD && type <= NT_EXTAB;
+	return type >= NT_EXADD && type <= NT_EXEQU;
 }
 
 int isNodeExpression1Op(st_Node_t node)
@@ -240,6 +240,30 @@ void st_computeFunction(st_Node_t node);
 void st_computeDeclVar(st_Node_t node);
 
 
+void st_computeRef(st_Node_t node, int destination)
+{
+	switch(getNodeType(node))
+	{
+		case NT_ID:
+			ass_ref(id_getName(node), destination); // error? (from ass.c)
+			freeID(node);
+			break;
+		case NT_EXDEREF:
+			st_computeExpression(node_getChild(node,0), 0);
+			freeNode(node);
+			break;
+		case NT_EXTAB:
+			st_computeExpression(node_getChild(node,1), 0);
+			node_setChild(node, 1, ST_UNDEFINED);
+			ass_ref(id_getName(node_getChild(node,0)), 1); // error? (from ass.c)
+			ass_add();
+			freeNodeAll(node);
+			break;
+		default:
+			break;
+	}
+}
+
 void st_computeExpression(st_Node_t node, int destination)
 {
 	if(node == ST_UNDEFINED)
@@ -247,14 +271,20 @@ void st_computeExpression(st_Node_t node, int destination)
 	
 	if(isNodeExpression2Op(node))
 	{
-		// Compute operands
-		st_NodeType nodeType = getNodeType(node_getChild(node,0));
-		st_computeExpression(node_getChild(node,1), 1);
+		st_NodeType nodeType = getNodeType(node_getChild(node,1));
 		if(nodeType != NT_ID && nodeType != NT_EXNB && nodeType != NT_EXREF)
+		{
+			st_computeExpression(node_getChild(node,0), 0);
 			ass_pushResult();
-		st_computeExpression(node_getChild(node,0), 0);
-		if(nodeType != NT_ID && nodeType != NT_EXNB && nodeType != NT_EXREF)
-			ass_popResult(1);
+			st_computeExpression(node_getChild(node,1), 0);
+			ass_mov(1,0); // mov R1 <= R0
+			ass_popResult(0);
+		}
+		else
+		{
+			st_computeExpression(node_getChild(node,0), 0);
+			st_computeExpression(node_getChild(node,1), 1);
+		}
 	}
 	
 	switch(getNodeType(node))
@@ -298,27 +328,37 @@ void st_computeExpression(st_Node_t node, int destination)
 		case NT_EXEQU:
 			ass_equ();
 			break;
-		case NT_EXTAB:
-			ass_add();
-			ass_deref();
-			break;
 		case NT_EXNOT:
 			st_computeExpression(node_getChild(node,0), 0);
 			ass_not();
 			break;
 		case NT_EXDEREF:
-			st_computeExpression(node_getChild(node,0), 0);
+			st_computeRef(node, 0);
 			ass_deref();
-			break;
+			return;
 		case NT_EXREF:
-			ass_ref(id_getName(node_getChild(node,0)), destination); // error? (from ass.c)
-			freeID(node_getChild(node,0));
+			st_computeRef(node_getChild(node,0), destination);
 			break;
-		case NT_EXAFFECT:
-			st_computeExpression(node_getChild(node,1), 0);
-			ass_str(id_getName(node_getChild(node,0))); // error? (from ass.c)
-			freeID(node_getChild(node,0));
-			break;
+		case NT_EXTAB:
+			st_computeRef(node, 0);
+			ass_deref();
+			return;
+		case NT_EXAFFECT: {
+			st_NodeType nodeType = getNodeType(node_getChild(node,1));
+			if(nodeType != NT_ID && nodeType != NT_EXNB && nodeType != NT_EXREF)
+			{
+				st_computeExpression(node_getChild(node,1), 1);
+				ass_pushResult();
+				st_computeRef(node_getChild(node,0), 0);
+				ass_popResult(1);
+			}
+			else
+			{
+				st_computeRef(node_getChild(node,0), 0);
+				st_computeExpression(node_getChild(node,1), 1);
+			}
+			ass_str();
+			break; }
 		case NT_FCTCALL:
 			st_computeFctCall(node);
 			break;
@@ -505,19 +545,20 @@ void st_compute(st_Node_t node)
 			labelNumber++;
 			freeNode(node);
 			break;
-		case NT_IF:
-			ass_ifBegin(labelNumber);
+		case NT_IF: {
+			int numlabel = labelNumber;
+			labelNumber++;
+			ass_ifBegin(numlabel);
 			st_computeExpression(node_getChild(node,0), 0);
-			ass_ifThen(labelNumber);
+			ass_ifThen(numlabel);
 			if(node_getChild(node,1) != ST_UNDEFINED)
 				st_compute(node_getChild(node,1));
-			ass_ifElse(labelNumber);
+			ass_ifElse(numlabel);
 			if(node_getChild(node,2) != ST_UNDEFINED)
 				st_compute(node_getChild(node,2));
-			ass_ifEnd(labelNumber);
-			labelNumber++;
+			ass_ifEnd(numlabel);
 			freeNode(node);
-			break;
+			break; }
 		case NT_RETURN:
 			st_computeExpression(node_getChild(node,0), 0);
 			ass_return();

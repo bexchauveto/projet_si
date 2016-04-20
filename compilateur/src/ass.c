@@ -54,9 +54,9 @@ void empiler(int reg)
 
 void depiler(int reg)
 {
-	printInst("6 %d 1\n", reg); // *reg = 1
+	printInst("6 %d 1\n", reg); // reg = 1
 	printInst("3 %d %d %d\n", ADDR_SP, ADDR_SP, reg); // SP--
-	printInst("D %d %d\n", reg, ADDR_SP); // *reg = *SP
+	printInst("D %d %d\n", reg, ADDR_SP); // reg = *SP
 }
 
 
@@ -156,21 +156,22 @@ void ass_ldr(char* varName, int reg)
 	printInst("D %d %d\n", ADDR_R0 + reg, ADDR_R0 + reg); // reg = *addr
 }
 
-void ass_str(char* varName)
+void ass_str()
 {
 	PRINT_DEBUG();
-	int addr = symboleT_seekAddressByName(varName);
-	if(addr == -1)
-		errorSymbol(ERR_FATAL, "the variable %s is undeclared", varName, -1);
-	printInst("6 %d %d\n", ADDR_R1, addr); // R1 = addr
-	printInst("1 %d %d %d\n", ADDR_R1, ADDR_R1, ADDR_CONTEXT); // addr += CONTEXT
-	printInst("E %d %d\n", ADDR_R1, ADDR_R0); // *addr = R0
+	printInst("E %d %d\n", ADDR_R0, ADDR_R1); // *R0 = R1
 }
 
 void ass_ld(int value, int reg)
 {
 	PRINT_DEBUG();
 	printInst("6 %d %d\n", ADDR_R0 + reg, value);
+}
+
+void ass_mov(int reg1, int reg2)
+{
+	PRINT_DEBUG();
+	printInst("5 %d %d\n", ADDR_R0 + reg1, ADDR_R0 + reg2);
 }
 
 void ass_pushResult()

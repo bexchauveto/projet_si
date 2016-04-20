@@ -40,7 +40,7 @@ void yyerror(const char *s);
 %type <integer> PtrsDef
 %type <nodeID> Prg Fct Prototype Params DeclParam SuiteParams Type
 %type <nodeID> Bloc Body BlocRet DeclVar SuiteDeclVar DeclVarVar DeclVarExp
-%type <nodeID> Instruction Expr AppelFct AppelParams SuiteAppelParams While If Return
+%type <nodeID> Instruction Expr LValue AppelFct AppelParams SuiteAppelParams While If Return
 
 
 
@@ -221,15 +221,8 @@ Expr :
 			{ $$ = st_node(NT_EXDIFF, $1, $3); }
 	| Expr tEQU Expr
 			{ $$ = st_node(NT_EXEQU, $1, $3); }
-	| tID tEQ Expr
-	  		{
-	  			st_Node_t id = st_id($1, yylineno);
-	  			$$ = st_node(NT_EXAFFECT, id, $3);
-			}
-	| Expr tCO Expr tCF
-			{ $$ = st_node(NT_EXTAB,$1,$3); }
-	| tMUL Expr %prec DEREFERENCE
-			{ $$ = st_node(NT_EXDEREF,$2); }
+	| LValue tEQ Expr
+	  		{ $$ = st_node(NT_EXAFFECT, $1, $3); }
 	| tREF tID
 			{
 				st_Node_t id = st_id($2, yylineno);
@@ -241,8 +234,18 @@ Expr :
 	  		{ $$ = st_exNb($1); }
 	| tNBEXP
 	  		{ $$ = st_exNb($1); }
-	| tID
-	  		{ $$ = st_id($1, yylineno); };
+	| LValue
+	  		{ $$ = $1; };
+LValue : 
+	  tID
+	  		{ $$ = st_id($1, yylineno); }
+	| tMUL Expr %prec DEREFERENCE
+			{ $$ = st_node(NT_EXDEREF,$2); }
+	| tID tCO Expr tCF
+			{
+				st_Node_t id = st_id($1, yylineno);
+				$$ = st_node(NT_EXTAB,id,$3);
+			};
 AppelFct : 
 	  tID tPO AppelParams tPF
 	  		{
