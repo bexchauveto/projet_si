@@ -19,6 +19,8 @@
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -45,72 +47,161 @@ end main_proc;
 
 architecture Behavioral of main_proc is
 
-signal IP : std_logic_vector(7 downto 0);
-component InstMem is
-	Port ( ADDR : in  STD_LOGIC_VECTOR (SIZE-1 downto 0);
-           CLK : in  STD_LOGIC;
-           DOUT : out  STD_LOGIC_VECTOR (SIZE_DOUT downto 0));
-end component;
-component RegisterBen is
-	Port ( addrA : in  STD_LOGIC_VECTOR (SIZE_REG-1 downto 0);
-           addrB : in  STD_LOGIC_VECTOR (SIZE_REG-1 downto 0);
-           addrW : in  STD_LOGIC_VECTOR (SIZE_REG-1 downto 0);
-           W : in  STD_LOGIC;
-           DATA : in  STD_LOGIC_VECTOR (SIZE-1 downto 0);
-           RST : in  STD_LOGIC;
-           CLK : in  STD_LOGIC;
-           QA : out  STD_LOGIC_VECTOR (SIZE-1 downto 0);
-           QB : out  STD_LOGIC_VECTOR (SIZE-1 downto 0));
-end component;
-component Pipe is
-	Port ( Ain : in  STD_LOGIC_VECTOR (SIZE-1 downto 0);
-           OPin : in  STD_LOGIC_VECTOR (SIZE_OP-1 downto 0);
-           Bin : in  STD_LOGIC_VECTOR (SIZE-1 downto 0);
-           Cin : in  STD_LOGIC_VECTOR (SIZE-1 downto 0);
-           Aout : out  STD_LOGIC_VECTOR (SIZE-1 downto 0);
-           OPout : out  STD_LOGIC_VECTOR (SIZE_OP-1 downto 0);
-           Bout : out  STD_LOGIC_VECTOR (SIZE-1 downto 0);
-           Cout : out  STD_LOGIC_VECTOR (SIZE-1 downto 0);
-			  CLK : in STD_LOGIC);
-end component;
-component ALU is
-	Port ( A : in  IEEE.NUMERIC_STD.SIGNED (SIZE-1 downto 0);
-           B : in  IEEE.NUMERIC_STD.SIGNED (SIZE-1 downto 0);
-           Ctrl_Alu : in  STD_LOGIC_VECTOR (2 downto 0);
-           S : out  IEEE.NUMERIC_STD.SIGNED (SIZE-1 downto 0);
-           N : out  STD_LOGIC;
-           O : out  STD_LOGIC;
-           Z : out  STD_LOGIC;
-           C : out  STD_LOGIC);
-end component;
-component DataMem is
-	Port ( ADDR : in  STD_LOGIC_VECTOR (SIZE-1 downto 0);
-           DIN : in  STD_LOGIC_VECTOR (SIZE-1 downto 0);
-           RW : in  STD_LOGIC;
-           RST : in  STD_LOGIC;
-           CLK : in  STD_LOGIC;
-           DOUT : out  STD_LOGIC_VECTOR (SIZE-1 downto 0));
-end component;
+signal DoutCount : std_logic_vector(SIZE-1 downto 0);
+signal DoutInstMem : std_logic_vector(SIZE_DOUT-1 downto 0);
+signal DoutLidiA : std_logic_vector(SIZE-1 downto 0);
+signal DoutLidiOp : std_logic_vector(SIZE-1 downto 0);
+signal DoutLidiB : std_logic_vector(SIZE-1 downto 0);
+signal DoutLidiC : std_logic_vector(SIZE-1 downto 0);
+signal QAtmp : std_logic_vector(SIZE-1 downto 0);
+signal DoutDiexA : std_logic_vector(SIZE-1 downto 0);
+signal DoutDiexOp : std_logic_vector(SIZE-1 downto 0);
+signal DoutDiexB : std_logic_vector(SIZE-1 downto 0);
+signal DoutDiexC : std_logic_vector(SIZE-1 downto 0);
+signal DoutAluS : std_logic_vector(SIZE-1 downto 0);
+signal DoutAluSsigned : ieee.numeric_std.signed(SIZE-1 downto 0);
+signal DinAluAsigned : ieee.numeric_std.signed(SIZE-1 downto 0);
+signal DinAluBsigned : ieee.numeric_std.signed(SIZE-1 downto 0);
+signal DinAluOp : std_logic_vector(2 downto 0);
+signal DoutAluO : std_logic;
+signal DoutAluC : std_logic;
+signal DoutAluZ : std_logic;
+signal DoutAluN : std_logic;
+signal DoutExmemA : std_logic_vector(SIZE-1 downto 0);
+signal DoutExmemOp : std_logic_vector(SIZE-1 downto 0);
+signal DoutExmemB : std_logic_vector(SIZE-1 downto 0);
+signal DoutDataMem : std_logic_vector(SIZE-1 downto 0);
+signal DoutMemreA : std_logic_vector(SIZE-1 downto 0);
+signal DoutMemreOp : std_logic_vector(SIZE-1 downto 0);
+signal DoutMemreB : std_logic_vector(SIZE-1 downto 0);
+signal AFC : std_logic_vector(SIZE-1 downto 0) := x"06";
+signal JMP : std_logic_vector(SIZE-1 downto 0) := x"07";
+signal JMF : std_logic_vector(SIZE-1 downto 0) := x"08";
 begin
 
 --Compteur d'instruction
-
+	instCount : entity work.InstCounter(Behavioral)
+	Port map( clk => CLK,
+           sens => '1',
+           load => '0',
+           rst => RST,
+           en => '1',
+           din => x"00",
+           dout => DoutCount);
 
 --Mémoire d'instruction
-
+	instMem : entity work.InstMemBench(Behavioral)
+	Port map( ADDR => DoutCount,
+           CLK => CLK,
+           DOUT => DoutInstMem);
 --LI/DI
-
+	lidi : entity work.Pipe(Behavioral)
+	Port map( Ain => DoutInstMem(SIZE_DOUT-1 downto SIZE_DOUT-8),
+           OPin => DoutInstMem(SIZE_DOUT-9 downto SIZE_DOUT-16),
+           Bin => DoutInstMem(SIZE_DOUT-17 downto SIZE_DOUT-24),
+           Cin => DoutInstMem(SIZE_DOUT-25 downto SIZE_DOUT-32),
+           Aout => DoutLidiA,
+           OPout => DoutLidiOp,
+           Bout => DoutLidiB,
+           Cout => DoutLidiC,
+			  CLK => CLK);
 --Banc de registres
+	registerBen : entity work.RegisterBench(Behavioral)
+	Port map( addrA => DoutLidiB,
+           addrB => DoutLidiC,
+           addrW => DoutMemreA,
+           W => tmp,
+           DATA => DoutMemreB,
+           RST => RST,
+           CLK => CLK,
+           QA => QAtmp ,
+           QB => QB);
+			  
+--MUX entre QA, DoutLidiB et DoutLidiOP
+	muxQADoutBOP : process(QAtmp, DoutLidiB, DoutLidiOP)
+	begin
+		if(DoutLidiOP = AFC or DoutLidiOP = JMP or DoutLidiOP = JMF) then
+			QA <= DoutLidiB;
+		end if;
+	end process;
 
 --DI/EX
-
+	diex : entity work.Pipe(Behavioral)
+	Port map( Ain => DoutLidiA,
+           OPin => DoutLidiOp,
+           Bin => QB,
+           Cin => QA,
+           Aout => DoutDiexA,
+           OPout => DoutDiexOp,
+           Bout => DoutDiexB,
+           Cout => DoutDiexC,
+			  CLK => CLK);
 --ALU
-
+	lcAlu : process(DoutDiexB, DoutDiexC, DoutDiexOp)
+	begin
+		DinAluAsigned <= IEEE.NUMERIC_STD.signed(DoutDiexB); 
+      DinAluBSigned <= IEEE.NUMERIC_STD.signed(DoutDiexC);
+		case(DoutDiexOp) is
+			when "00000001" => -- Add 1
+				DinAluOp <= "001";
+			when "00000010" => -- Mul 2
+				DinAluOp <= "010";
+			when "00000011" => -- Sub 3
+				DinAluOp <= "011";
+			when "00000100" => -- Div 4
+				DinAluOp <= "100";
+			when "00001001" => -- Inf 9
+				DinAluOp <= "011";
+			when "00001010" => -- Sup A
+				DinAluOp <= "011";
+			when "00001011" => -- Equ B
+				DinAluOp <= "011";
+			when others =>
+				NULL;
+		end case;
+	end process;
+	
+	alu : entity work.ALU(Behavioral)
+	Port map( A => DinAluAsigned, 
+           B => DinAluBSigned,
+           Ctrl_Alu => DinAluOp,
+           S => DoutAluSsigned,
+           N => DoutAluN,
+           O => DoutAluO,
+           Z => DoutAluZ,
+           C => DoutAluC);
+	process(DoutAluSsigned)
+	begin
+		DoutAluS <= std_logic_vector(DoutAluSsigned);
+	end process;
 --Ex/Mem
-
+	exmem : entity work.Pipe(Behavioral)
+	Port map( Ain => DoutDiexA,
+           OPin => DoutDiexOp,
+           Bin => DoutAluS,
+			  Cin => x"00",
+           Aout => DoutExmemA,
+           OPout => DoutExmemOp,
+           Bout => DoutExmemB,
+			  CLK => CLK);
 --Mémoire des données
+	dataMem : entity work.DataMemBench(Behavioral)
+	Port map( ADDR => tmp,
+           DIN => DoutExmemB,
+           RW => tmp,
+           RST => RST,
+           CLK => CLK,
+           DOUT => DoutDataMem);
 
 --Mem/RE
-
+	Memre : entity work.Pipe(Behavioral)
+	Port map( Ain => DoutExmemA,
+           OPin => DoutExmemOp,
+           Bin => tmp,
+			  Cin => x"00",
+           Aout => DoutMemreA,
+           OPout => DoutMemreOp,
+           Bout => DoutMemreB,
+			  CLK => CLK);
 end Behavioral;
 
