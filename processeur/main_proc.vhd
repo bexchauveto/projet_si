@@ -30,11 +30,30 @@ use IEEE.STD_LOGIC_1164.ALL;
 --use UNISIM.VComponents.all;
 
 entity main_proc is
+	Generic( SIZE : Natural := 8);
+	Port( CLK : in STD_LOGIC;
+			RST : in STD_LOGIC;
+			QA : inout STD_LOGIC_VECTOR( SIZE-1 downto 0);
+			QB : inout STD_LOGIC_VECTOR( SIZE-1 downto 0));
 end main_proc;
 
 architecture Behavioral of main_proc is
 
+
+
+
 begin
+
+--Compteur d'instruction
+
+--Mémoire d'instruction
+
+--Banc de registres
+
+--ALU
+
+--Mémoire des données
+
 
 
 end Behavioral;
