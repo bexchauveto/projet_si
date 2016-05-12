@@ -1,5 +1,9 @@
 
 
+
+/*
+ * test
+ ****/
 int fibo(int *pt, int x)
 {
 	int res;
@@ -15,7 +19,6 @@ int fibo(int *pt, int x)
 	*(pt+x) = res;
 	return res;
 }
-
 
 
 int main()
