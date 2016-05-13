@@ -119,7 +119,7 @@ begin
 --MUX entre QA, DoutLidiB et DoutLidiOP
 	muxQADoutBOP : process(QAtmp, DoutLidiB, DoutLidiOP)
 	begin
-		if(DoutLidiOP = x"06" or DoutLidiOP = x"07" or DoutLidiOP = x"07") then
+		if(DoutLidiOP = x"06" or DoutLidiOP = x"07" or DoutLidiOP = x"08") then -- AFC 6, JMP 7, JMF 8
 			QA <= DoutLidiB;
 		end if;
 	end process;
