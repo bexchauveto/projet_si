@@ -19,9 +19,7 @@
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.NUMERIC_STD.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
+use ieee.std_logic_unsigned.all;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -34,10 +32,10 @@ use IEEE.STD_LOGIC_ARITH.ALL;
 
 entity ALU is
 	 Generic (SIZE : Natural := 8);
-    Port ( A : in  IEEE.NUMERIC_STD.SIGNED (SIZE-1 downto 0);
-           B : in  IEEE.NUMERIC_STD.SIGNED (SIZE-1 downto 0);
+    Port ( A : in  STD_LOGIC_VECTOR (SIZE-1 downto 0);
+           B : in  STD_LOGIC_VECTOR (SIZE-1 downto 0);
            Ctrl_Alu : in  STD_LOGIC_VECTOR (2 downto 0);
-           S : out  IEEE.NUMERIC_STD.SIGNED (SIZE-1 downto 0);
+           S : out  STD_LOGIC_VECTOR (SIZE-1 downto 0);
            N : out  STD_LOGIC;
            O : out  STD_LOGIC;
            Z : out  STD_LOGIC;
@@ -47,8 +45,8 @@ end ALU;
 architecture Behavioral of ALU is
 
 	--Ri is the result register, and Rj and Rk are the operands registers
-	signal Ri: IEEE.NUMERIC_STD.SIGNED((2*SIZE)-1 downto 0) := (others => '0');
-	signal Rj, Rk: IEEE.NUMERIC_STD.SIGNED(SIZE downto 0) := (others => '0');
+	signal Ri: STD_LOGIC_VECTOR((2*SIZE)-1 downto 0) := (others => '0');
+	signal Rj, Rk: STD_LOGIC_VECTOR(SIZE downto 0) := (others => '0');
 
 begin
 
@@ -63,11 +61,11 @@ begin
 		when "001" => -- Addition
 			Ri <= b"0000000"&(Rj + Rk);
 		when "010" => -- Multiplication
-			Ri <= (Rj(SIZE-1 downto 0) * Rk(SIZE-1 downto 0));
+			Ri <= Rj(SIZE-1 downto 0) * Rk(SIZE-1 downto 0);
 		when "011" => -- Soustraction
 			Ri <= b"0000000"&(Rj - Rk);
 		when "100" => -- Division
-			Ri <= b"0000000"&(Rj / Rk);
+			--Ri <= b"0000000"&(Rj / Rk);
 		when others =>
 			NULL;
 	end case;
@@ -86,9 +84,11 @@ begin
 		Z <= '1';
 	end if;
 	if(Ctrl_Alu = "001") then
-		C <= Ri(SIZE);
-	else
 		O <= Ri(SIZE);
+		C <= Ri(SIZE);
+	else if (Ri(SIZE) = '1' or Ri(SIZE+1) = '1' or Ri(SIZE+2) = '1' or Ri(SIZE+3) = '1' or Ri(SIZE+4) = '1' or Ri(SIZE+5) = '1' or Ri(SIZE+6) = '1' or Ri(SIZE+7) = '1') then
+			O <= Ri(SIZE);
+			end if;
 	end if;
 end process;
 

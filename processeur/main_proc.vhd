@@ -59,9 +59,7 @@ signal DoutDiexOp : std_logic_vector(SIZE-1 downto 0);
 signal DoutDiexB : std_logic_vector(SIZE-1 downto 0);
 signal DoutDiexC : std_logic_vector(SIZE-1 downto 0);
 signal DoutAluS : std_logic_vector(SIZE-1 downto 0);
-signal DoutAluSsigned : ieee.numeric_std.signed(SIZE-1 downto 0);
-signal DinAluAsigned : ieee.numeric_std.signed(SIZE-1 downto 0);
-signal DinAluBsigned : ieee.numeric_std.signed(SIZE-1 downto 0);
+signal DoutMuxAlu : std_logic_vector(SIZE-1 downto 0);
 signal DinAluOp : std_logic_vector(2 downto 0);
 signal DoutAluO : std_logic;
 signal DoutAluC : std_logic;
@@ -70,13 +68,14 @@ signal DoutAluN : std_logic;
 signal DoutExmemA : std_logic_vector(SIZE-1 downto 0);
 signal DoutExmemOp : std_logic_vector(SIZE-1 downto 0);
 signal DoutExmemB : std_logic_vector(SIZE-1 downto 0);
+signal DinDataMemAddr : std_logic_vector(SIZE-1 downto 0);
+signal DinDataMemRW : std_logic;
 signal DoutDataMem : std_logic_vector(SIZE-1 downto 0);
 signal DoutMemreA : std_logic_vector(SIZE-1 downto 0);
 signal DoutMemreOp : std_logic_vector(SIZE-1 downto 0);
 signal DoutMemreB : std_logic_vector(SIZE-1 downto 0);
-signal AFC : std_logic_vector(SIZE-1 downto 0) := x"06";
-signal JMP : std_logic_vector(SIZE-1 downto 0) := x"07";
-signal JMF : std_logic_vector(SIZE-1 downto 0) := x"08";
+signal DinMemReB : std_logic_vector(SIZE-1 downto 0);
+signal DinRegBenOp : std_logic;
 begin
 
 --Compteur d'instruction
@@ -107,10 +106,10 @@ begin
 			  CLK => CLK);
 --Banc de registres
 	registerBen : entity work.RegisterBench(Behavioral)
-	Port map( addrA => DoutLidiB,
-           addrB => DoutLidiC,
-           addrW => DoutMemreA,
-           W => tmp,
+	Port map( addrA => DoutLidiB(SIZE_REG-1 downto 0),
+           addrB => DoutLidiC(SIZE_REG-1 downto 0),
+           addrW => DoutMemreA(SIZE_REG-1 downto 0),
+           W => DinRegBenOp,
            DATA => DoutMemreB,
            RST => RST,
            CLK => CLK,
@@ -120,7 +119,7 @@ begin
 --MUX entre QA, DoutLidiB et DoutLidiOP
 	muxQADoutBOP : process(QAtmp, DoutLidiB, DoutLidiOP)
 	begin
-		if(DoutLidiOP = AFC or DoutLidiOP = JMP or DoutLidiOP = JMF) then
+		if(DoutLidiOP = x"06" or DoutLidiOP = x"07" or DoutLidiOP = x"07") then
 			QA <= DoutLidiB;
 		end if;
 	end process;
@@ -139,8 +138,6 @@ begin
 --ALU
 	lcAlu : process(DoutDiexB, DoutDiexC, DoutDiexOp)
 	begin
-		DinAluAsigned <= IEEE.NUMERIC_STD.signed(DoutDiexB); 
-      DinAluBSigned <= IEEE.NUMERIC_STD.signed(DoutDiexC);
 		case(DoutDiexOp) is
 			when "00000001" => -- Add 1
 				DinAluOp <= "001";
@@ -162,19 +159,43 @@ begin
 	end process;
 	
 	alu : entity work.ALU(Behavioral)
-	Port map( A => DinAluAsigned, 
-           B => DinAluBSigned,
+	Port map( A => DoutDiexB, 
+           B => DoutDiexC,
            Ctrl_Alu => DinAluOp,
-           S => DoutAluSsigned,
+           S => DoutAluS,
            N => DoutAluN,
            O => DoutAluO,
            Z => DoutAluZ,
            C => DoutAluC);
-	process(DoutAluSsigned)
+			  	
+	muxAluOPBSFlag : process(DoutDiexOp, DoutDiexB, DoutAluS)
 	begin
-		DoutAluS <= std_logic_vector(DoutAluSsigned);
+		case(DoutDiexOp) is
+			when "00001001" => -- Inf 9
+				if(DoutAluN = '1') then
+					DoutMuxAlu <= b"00000001";
+				else 
+					DoutMuxAlu <= x"00";
+				end if;	
+			when "00001010" => -- Sup A
+				if(DoutAluN = '0' and DoutAluZ = '0') then
+					DoutMuxAlu <= b"00000001";
+				else 
+					DoutMuxAlu <= x"00";
+				end if;	
+			when "00001011" => -- Equ B
+				if(DoutAluZ = '1') then
+					DoutMuxAlu <= b"00000001";
+				else 
+					DoutMuxAlu <= x"00";
+				end if;
+			when others =>
+				DoutMuxAlu <= DoutAluS;
+		end case;
 	end process;
+	
 --Ex/Mem
+
 	exmem : entity work.Pipe(Behavioral)
 	Port map( Ain => DoutDiexA,
            OPin => DoutDiexOp,
@@ -184,24 +205,73 @@ begin
            OPout => DoutExmemOp,
            Bout => DoutExmemB,
 			  CLK => CLK);
+	
+	
+	muxExmemAOPB : process(DoutExmemA, DoutExmemOp, DoutExmemB)
+	begin
+		case(DoutExmemOp) is
+			when "00010010" => --STORE 12
+				DinDataMemAddr <= DoutExmemA;
+			when "00010011" => --LOAD 13
+				DinDataMemAddr <= DoutExmemB;
+			when others =>
+				NULL;
+		end case;
+	end process;
+	
+	lcDataMem : process(DoutExmemOp)
+	begin
+		case(DoutExmemOp) is
+			when "00010010" => --STORE 12
+				DinDataMemRW <= '0';
+			when "00010011" => --LOAD 13
+				DinDataMemRW <= '1';
+			when others =>
+				NULL;
+		end case;
+	end process;
+	
 --Mémoire des données
 	dataMem : entity work.DataMemBench(Behavioral)
-	Port map( ADDR => tmp,
+	Port map( ADDR => DinDataMemAddr,
            DIN => DoutExmemB,
-           RW => tmp,
+           RW => DinDataMemRW,
            RST => RST,
            CLK => CLK,
            DOUT => DoutDataMem);
+			  
+	muxDataMemOpOutB : process(DoutDataMem, DoutExmemOp, DoutExmemB)
+	begin
+		case(DoutExmemOp) is
+			when "00010011" => --LOAD 13
+				DinMemReB <= DoutDataMem;
+			when others =>
+				DinMemReB <= DoutExmemB;
+		end case;
+	end process;
 
 --Mem/RE
 	Memre : entity work.Pipe(Behavioral)
 	Port map( Ain => DoutExmemA,
            OPin => DoutExmemOp,
-           Bin => tmp,
+           Bin => DinMemReB,
 			  Cin => x"00",
            Aout => DoutMemreA,
            OPout => DoutMemreOp,
            Bout => DoutMemreB,
 			  CLK => CLK);
+			  
+			  
+	lcMemreOp : process(DoutMemreOp)
+	begin
+		case(DoutMemreOp) is
+			when (x"13" or x"06" or x"05" or x"01" or x"02" or x"03" or x"04") => --LOAD 13, AFC 6, COP 5, ADD 1, MUL 2, DIV 4, SUB 3,
+				DinRegBenOp <= '1';
+			when others =>
+				DinRegBenOp <= '0';
+		end case;
+	end process;
+	
+	
 end Behavioral;
 
