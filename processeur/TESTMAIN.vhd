@@ -83,11 +83,10 @@ BEGIN
    -- Stimulus process
    stim_proc: process
    begin		
-      -- hold reset state for 100 ns.
-      wait for 100 ns;	
+      	
 
       wait for CLK_period*10;
-		RST <= '1';
+		RST <= '0' after 0ns, '1' after 50ns ;
 
       -- insert stimulus here 
 

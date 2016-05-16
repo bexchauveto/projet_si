@@ -1,7 +1,7 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.NUMERIC_STD.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 -- Uncomment the following library declaration if using
@@ -30,11 +30,10 @@ end RegisterBench;
 
 architecture Behavioral of RegisterBench is
 	TYPE REGISTERS IS ARRAY (0 to (NB_REGISTERS-1)) OF STD_LOGIC_VECTOR (SIZE-1 downto 0);
-	signal R : REGISTERS;
-	signal memAddrA : STD_LOGIC_VECTOR (SIZE_REG-1 downto 0);
-	signal memAddrB : STD_LOGIC_VECTOR (SIZE_REG-1 downto 0);
+	signal R : REGISTERS := (others => (others => '0'));
+	signal memAddrA : STD_LOGIC_VECTOR (SIZE_REG-1 downto 0) := (others => '0');
+	signal memAddrB : STD_LOGIC_VECTOR (SIZE_REG-1 downto 0) := (others => '0');
 begin
-	
 	QA <= R(conv_integer(memAddrA));
 	QB <= R(conv_integer(memAddrB));
 	

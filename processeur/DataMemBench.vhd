@@ -25,7 +25,7 @@ end DataMemBench;
 
 architecture Behavioral of DataMemBench is
 	TYPE MEMORY IS ARRAY (0 to (15)) OF STD_LOGIC_VECTOR (SIZE-1 downto 0);
-	signal RAM : MEMORY;
+	signal RAM : MEMORY := (others => (others => '0'));
 	signal memOut : STD_LOGIC_VECTOR (SIZE-1 downto 0);
 begin
 

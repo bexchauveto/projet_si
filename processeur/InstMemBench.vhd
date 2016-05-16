@@ -23,10 +23,9 @@ end InstMemBench;
 
 architecture Behavioral of InstMemBench is
 	TYPE MEMORY IS ARRAY (0 to (15)) OF STD_LOGIC_VECTOR (SIZE_DOUT-1 downto 0);
-	signal ROM : MEMORY;
+	signal ROM : MEMORY := (0=>x"01020304", 1=>x"05060708", others => (others => '0'));
 	signal memOut : STD_LOGIC_VECTOR (SIZE_DOUT-1 downto 0);
 begin
-
 	DOUT <= memOut;
 
 	instbench : process (CLK) is

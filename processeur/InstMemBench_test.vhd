@@ -39,7 +39,7 @@ BEGIN
           DOUT => DOUT
         );
 
-   CLK <= not CLK after 50ns;
-	ADDR <= x"05" after 200ns;
+   CLK <= not CLK after 10ns;
+	ADDR <= x"05" after 70ns, x"06" after 80ns;
 
 END;

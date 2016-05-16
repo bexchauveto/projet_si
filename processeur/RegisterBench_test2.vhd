@@ -86,14 +86,14 @@ BEGIN
         );
 
     CLK <= not CLK after 50ns;
-	 RST <= '1' after 100ns, '0' after 800ns;
+	 --RST <= '1' after 100ns, '0' after 800ns;
 	 
-	 W <= '1' after 200ns;
-	 addrW <= "0011" after 200ns;
-	 DATA <= x"AA" after 200ns;
+	 W <= '1' after 400ns;
+	 addrW <= "0011" after 400ns;
+	 DATA <= x"AA" after 400ns;
 	 
-	 addrA <= "0010" after 200ns;
-	 addrB <= "0011" after 200ns;
+	 addrA <= "0010" after 0ns;
+	 addrB <= "0011" after 0ns, "0000" after 350ns;
 
 END;
 
