@@ -9,8 +9,10 @@
 #include "error.h"
 
 
+extern int yylineno;
+
 int yylex();
-int yyerror(char *s);	
+void yyerror(const char *s);	
 
 
 
@@ -35,9 +37,10 @@ int yyerror(char *s);
 %token <exp> tNBEXP
 %token <string> tID
 
-%type <nodeID> Prg Fct Prototype Params DeclParam SuiteParams 
-%type <nodeID> Bloc Body BlocRet DeclVar SuiteDeclVar DeclVarVar
-%type <nodeID> Instruction Expr AppelFct AppelParams SuiteAppelParams While If Return
+%type <integer> PtrsDef
+%type <nodeID> Prg Fct Prototype Params DeclParam SuiteParams Type
+%type <nodeID> Bloc Body BlocRet DeclVar SuiteDeclVar DeclVarVar DeclVarExp
+%type <nodeID> Instruction Expr LValue AppelFct AppelParams SuiteAppelParams While If Return
 
 
 
@@ -50,8 +53,8 @@ int yyerror(char *s);
 %left tINF tINFEQ tSUP tSUPEQ
 %left tPLUS tMOINS
 %left tMUL tDIV
-%right tNOT tREF DEREFERENCE
-%left tCO tCF
+%right tNOT tREF SIGNE DEREFERENCE
+%left tCO tCF tPO tPF
 
 
 
@@ -72,35 +75,47 @@ TODO:
 
 %%
 
+/* ------ DEFINITION DIVERSES ------ */
+Type :
+	  tINT PtrsDef
+	  		{ $$=st_type(0, 0, $2); };
+PtrsDef :
+	  tMUL PtrsDef
+	  		{ $$ = $2 + 1; }
+	| 		{ $$ = 0; };
+
 /* ------ DEFINITION DU FICHIER ------ */
 Prg :
 	  Fct Prg
-	  		{ st_node(NT_ROOT, $1, $2); }
+	  		{ $$=st_node(NT_ROOT, $1, $2); }
 	| 		{ $$=ST_UNDEFINED; };
 
 /* ------ DEFINITION DES FONCTIONS ------ */
 Fct : 
-	  Prototype BlocRet 
+	  Prototype Bloc 
+	  		{
+	  			$$ = st_node(NT_FUNCTION, $1, $2);
+	  			error(ERR_WARNING, "reach end of non-void function without return statement", yylineno);
+	  		}
+	| Prototype BlocRet 
 	  		{ $$ = st_node(NT_FUNCTION, $1, $2); }
 	| Prototype tPTVIR
 			{ $$ = st_node(NT_FUNCTION, $1, ST_UNDEFINED); };
 Prototype : 
-	  tINT tID tPO Params tPF 
+	  Type tID tPO Params tPF 
 	  		{
-	  			st_Node_t type = st_type(0, 0);
-	  			st_Node_t id = st_id($2);
-	  			$$ = st_node(NT_PROTOTYPE, type, id, $4);
+	  			st_Node_t id = st_id($2, yylineno);
+	  			$$ = st_node(NT_PROTOTYPE, $1, id, $4);
 			} ;
 Params : 
 	  DeclParam SuiteParams
 	  		{ $$=st_node(NT_PARAMS, $1, $2); }
 	| 		{ $$=ST_UNDEFINED; };
 DeclParam :
-	  tINT tID 
+	  Type tID 
 	  		{
-	  			st_Node_t type = st_type(0, 0);
-	  			st_Node_t id = st_id($2);
-	  			$$ = st_node(NT_PARAM, type, id);
+	  			st_Node_t id = st_id($2, yylineno);
+	  			$$ = st_node(NT_PARAM, $1, id, ST_UNDEFINED);
 			};
 SuiteParams :
 	  tVIR DeclParam SuiteParams
@@ -112,9 +127,7 @@ Bloc :
 	  tAO Body tAF
 	  		{ $$ = st_node(NT_BLOC, $2, ST_UNDEFINED); };
 BlocRet : 
-	  tAO Body tAF
-	  		{ $$ = st_node(NT_BLOC, $2, ST_UNDEFINED); }
-	| tAO Body Return tAF
+	  tAO Body Return tAF
 	  		{ $$ = st_node(NT_BLOC, $2, $3); };
 Body : 
 	  Instruction Body
@@ -123,32 +136,38 @@ Body :
 
 /* ------ DEFINITION DES DECLARATIONS ------ */
 DeclVar : 
-	  tINT DeclVarVar SuiteDeclVar
+	  Type DeclVarVar SuiteDeclVar
 	  		{
-	  			st_Node_t type = st_type(0,0);
 	  			st_Node_t d2 = st_node(NT_DECLVAR2, $2, $3);
-	  			$$ = st_node(NT_DECLVAR, type, d2);
+	  			$$ = st_node(NT_DECLVAR, $1, d2);
 	  		};
 SuiteDeclVar : 
 	  tVIR DeclVarVar SuiteDeclVar
 	  		{ $$ = st_node(NT_DECLVAR2, $2, $3); }
 	| 		{ $$=ST_UNDEFINED; };
 DeclVarVar : 
-	  tID
+	  tID DeclVarExp
 	  		{
-	  			st_Node_t id = st_id($1);
-	  			$$ = st_node(NT_DECLVARVAR, id, ST_UNDEFINED);
+	  			st_Node_t id = st_id($1, yylineno);
+	  			$$ = st_node(NT_DECLVARVAR, id, $2, ST_UNDEFINED);
 	  		}
-	| tID tEQ Expr
+	| tID tCO tNB tCF
 			{
-	  			st_Node_t id = st_id($1);
-	  			$$ = st_node(NT_DECLVARVAR, id, $3);
+	  			st_Node_t id = st_id($1, yylineno);
+	  			st_Node_t size = st_exNb($3);
+	  			$$ = st_node(NT_DECLVARVAR, id, ST_UNDEFINED, size);
 	  		};
-
+DeclVarExp :
+	  tEQ Expr
+	  		{ $$=$2; }
+	| 		{ $$=ST_UNDEFINED; };
+	
 
 /* ------ DEFINITION DES INSTRUCTIONS ------ */
 Instruction :
-	  Expr tPTVIR
+	  tPTVIR
+			{ $$=ST_UNDEFINED; }
+	| Expr tPTVIR
 	  		{ $$ = $1; }
 	| DeclVar tPTVIR
 			{ $$ = $1; }
@@ -172,6 +191,10 @@ Return :
 Expr : 
 	  tPO Expr tPF 
 	  		{ $$ = $2; }
+	| tPLUS Expr %prec SIGNE
+	  		{ $$ = $2; }
+	| tMOINS Expr %prec SIGNE
+	  		{ $$ = st_node(NT_EXSUB, st_exNb(0), $2); }
 	| Expr tPLUS Expr
 	  		{ $$ = st_node(NT_EXADD, $1, $3); }
 	| Expr tMOINS Expr
@@ -198,18 +221,11 @@ Expr :
 			{ $$ = st_node(NT_EXDIFF, $1, $3); }
 	| Expr tEQU Expr
 			{ $$ = st_node(NT_EXEQU, $1, $3); }
-	| tID tEQ Expr
-	  		{
-	  			st_Node_t id = st_id($1);
-	  			$$ = st_node(NT_EXAFFECT, id, $3);
-			}
-	| Expr tCO Expr tCF
-			{ $$ = st_node(NT_EXTAB,$1,$3); }
-	| tMUL Expr %prec DEREFERENCE
-			{ $$ = st_node(NT_EXDEREF,$2); }
+	| LValue tEQ Expr
+	  		{ $$ = st_node(NT_EXAFFECT, $1, $3); }
 	| tREF tID
 			{
-				st_Node_t id = st_id($2);
+				st_Node_t id = st_id($2, yylineno);
 				$$ = st_node(NT_EXREF,id);
 			}
 	| AppelFct
@@ -218,12 +234,24 @@ Expr :
 	  		{ $$ = st_exNb($1); }
 	| tNBEXP
 	  		{ $$ = st_exNb($1); }
-	| tID
-	  		{ $$ = st_id($1); };
+	| LValue
+	  		{ $$ = $1; };
+LValue : 
+	  tID
+	  		{ $$ = st_id($1, yylineno); }
+	| tMUL LValue %prec DEREFERENCE       /* pour éviter un conflit */
+			{ $$ = st_node(NT_EXDEREF,$2); }
+	| tMUL tPO Expr tPF %prec DEREFERENCE /* pour éviter un conflit */
+			{ $$ = st_node(NT_EXDEREF,$3); }
+	| tID tCO Expr tCF
+			{
+				st_Node_t id = st_id($1, yylineno);
+				$$ = st_node(NT_EXTAB,id,$3);
+			};
 AppelFct : 
 	  tID tPO AppelParams tPF
 	  		{
-	  			st_Node_t id = st_id($1);
+	  			st_Node_t id = st_id($1, yylineno);
 	  			$$ = st_node(NT_FCTCALL, id, $3);
 			};
 AppelParams : 
@@ -241,26 +269,33 @@ SuiteAppelParams :
 
 %%
 
-int yyerror(char* s)
+void yyerror(const char* s)
 {
-	error(ERR_FATAL, s, 1);
+	error(ERR_FATAL, s, yylineno);
 }
 
 
 int main(int argc, char * argv[])
 {
+	if(argc < 2)
+	{
+		printf("Usage : %s [OUTPUT_FILE] < [INPUT_FILE] \n", argv[0]);
+		return -1;
+	}
 	// --- Lecture du fichier
 	yyparse();
 	//st_printTree(0,0);
 	
 	// --- Compilation
+	
 	FILE * file = fopen(argv[1], "w");
 	if(file == NULL)
 	{
+		printf("\Error : Cannot open output file.\n");
 		return -1;
 	}
 	ass_setFile(file);
-	st_compute(0);
+	st_computeTree();
 	fflush(file);
 	fclose(file);
 	

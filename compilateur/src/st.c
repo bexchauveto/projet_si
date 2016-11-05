@@ -29,12 +29,14 @@ typedef struct {
 typedef struct {
 	AbstractNode _;
 	char* id;
+	int line;
 } LeafID;
 
 typedef struct {
 	AbstractNode _;
 	int type;
 	int flags;
+	int nbPtr;
 } LeafType;
 
 #define NB_CHILDREN_MAX 3
@@ -73,7 +75,7 @@ st_NodeType getNodeType(st_Node_t handler)
 int isNodeExpression2Op(st_Node_t node)
 {
 	st_NodeType type = getNodeType(node);
-	return type >= NT_EXADD && type <= NT_EXTAB;
+	return type >= NT_EXADD && type <= NT_EXEQU;
 }
 
 int isNodeExpression1Op(st_Node_t node)
@@ -104,12 +106,13 @@ void freeNb(st_Node_t handler)
 }
 
 //******** Type
-st_Node_t createType(int type, int flags)
+st_Node_t createType(int type, int flags, int nbPtr)
 {
 	LeafType* node = malloc(sizeof(LeafType));
 	if(!node) return node;
 	node->type = type;
 	node->flags = flags;
+	node->nbPtr = nbPtr;
 	return createAN(NT_TYPE, node);
 }
 
@@ -119,11 +122,12 @@ void freeType(st_Node_t handler)
 }
 
 //******** ID
-st_Node_t createID(char* id)
+st_Node_t createID(char* id, int line)
 {
 	LeafID* node = malloc(sizeof(LeafID));
 	if(!node) return node;
 	node->id = id;
+	node->line = line;
 	return createAN(NT_ID, node);
 }
 
@@ -131,6 +135,12 @@ char* id_getName(st_Node_t node)
 {
 	LeafID* id = (LeafID*) node;
 	return id->id;
+}
+
+int id_getLine(st_Node_t node)
+{
+	LeafID* id = (LeafID*) node;
+	return id->line;
 }
 
 void freeID(st_Node_t handler)
@@ -228,23 +238,87 @@ void st_computeExpression(st_Node_t node, int destination);
 void st_computeFctCall(st_Node_t node);
 void st_computeFunction(st_Node_t node);
 void st_computeDeclVar(st_Node_t node);
+void st_compute(st_Node_t node);
 
+
+void st_computeTree()
+{
+	st_compute(treeRoot);
+}
+
+
+
+
+void st_computeRef(st_Node_t node, int destination)
+{
+	switch(getNodeType(node))
+	{
+		case NT_ID: {
+			char* varName = id_getName(node);
+			if(symboleT_seekAddressByName(varName) == -1)
+				errorSymbol(ERR_FATAL, "the variable %s is undeclared", varName, id_getLine(node));
+			ass_ref(varName, destination);
+			freeID(node);
+			break; }
+		case NT_EXDEREF:
+			st_computeExpression(node_getChild(node,0), 0);
+			freeNode(node);
+			break;
+		case NT_EXTAB: {
+			char* varName = id_getName(node_getChild(node,0));
+			int varLine = id_getLine(node_getChild(node,0));
+			if(symboleT_seekAddressByName(varName) == -1)
+				errorSymbol(ERR_FATAL, "the variable %s is undeclared", varName, varLine);
+			st_computeExpression(node_getChild(node,1), 0);
+			node_setChild(node, 1, ST_UNDEFINED);
+			ass_ref(varName, 1);
+			ass_add();
+			freeNodeAll(node);
+			break; }
+		default:
+			break;
+	}
+}
 
 void st_computeExpression(st_Node_t node, int destination)
 {
 	if(node == ST_UNDEFINED)
 		return;
 	
+	if(getNodeType(node)==NT_EXOR)
+	{
+		st_Node_t op1 = node_getChild(node,0);
+		st_Node_t op2 = node_getChild(node,1);
+		st_compute(st_node(NT_IF, op1, createNb(1), op2));
+		freeNode(node);
+		return;
+	}
+	else if(getNodeType(node)==NT_EXAND)
+	{
+		st_Node_t op1 = node_getChild(node,0);
+		st_Node_t op2 = node_getChild(node,1);
+		st_compute(st_node(NT_IF, op1, op2, createNb(0)));
+		freeNode(node);
+		return;
+	}
+	
+	
 	if(isNodeExpression2Op(node))
 	{
-		// Compute operands
-		st_NodeType nodeType = getNodeType(node_getChild(node,0));
-		st_computeExpression(node_getChild(node,1), 1);
+		st_NodeType nodeType = getNodeType(node_getChild(node,1));
 		if(nodeType != NT_ID && nodeType != NT_EXNB && nodeType != NT_EXREF)
+		{
+			st_computeExpression(node_getChild(node,0), 0);
 			ass_pushResult();
-		st_computeExpression(node_getChild(node,0), 0);
-		if(nodeType != NT_ID && nodeType != NT_EXNB && nodeType != NT_EXREF)
-			ass_popResult(1);
+			st_computeExpression(node_getChild(node,1), 0);
+			ass_mov(1,0); // mov R1 <= R0
+			ass_popResult(0);
+		}
+		else
+		{
+			st_computeExpression(node_getChild(node,0), 0);
+			st_computeExpression(node_getChild(node,1), 1);
+		}
 	}
 	
 	switch(getNodeType(node))
@@ -288,34 +362,47 @@ void st_computeExpression(st_Node_t node, int destination)
 		case NT_EXEQU:
 			ass_equ();
 			break;
-		case NT_EXTAB:
-			ass_add();
-			ass_deref();
-			break;
 		case NT_EXNOT:
 			st_computeExpression(node_getChild(node,0), 0);
 			ass_not();
 			break;
 		case NT_EXDEREF:
-			st_computeExpression(node_getChild(node,0), 0);
+			st_computeRef(node, 0);
 			ass_deref();
-			break;
+			return;
 		case NT_EXREF:
-			ass_ref(id_getName(node_getChild(node,0)), destination);
-			freeID(node_getChild(node,0));
+			st_computeRef(node_getChild(node,0), destination);
 			break;
-		case NT_EXAFFECT:
-			st_computeExpression(node_getChild(node,1), 0);
-			ass_str(id_getName(node_getChild(node,0))); // error?
-			freeID(node_getChild(node,0));
-			break;
+		case NT_EXTAB:
+			st_computeRef(node, 0);
+			ass_deref();
+			return;
+		case NT_EXAFFECT: {
+			st_NodeType nodeType = getNodeType(node_getChild(node,1));
+			if(nodeType != NT_ID && nodeType != NT_EXNB && nodeType != NT_EXREF)
+			{
+				st_computeExpression(node_getChild(node,1), 1);
+				ass_pushResult();
+				st_computeRef(node_getChild(node,0), 0);
+				ass_popResult(1);
+			}
+			else
+			{
+				st_computeRef(node_getChild(node,0), 0);
+				st_computeExpression(node_getChild(node,1), 1);
+			}
+			ass_str();
+			break; }
 		case NT_FCTCALL:
 			st_computeFctCall(node);
 			break;
-		case NT_ID:
-			ass_ldr(id_getName(node), destination);
+		case NT_ID: {
+			char* varName = id_getName(node);
+			if(symboleT_seekAddressByName(varName) == -1)
+				errorSymbol(ERR_FATAL, "the variable %s is undeclared", varName, id_getLine(node));
+			ass_ldr(varName, destination); // error? (from ass.c)
 			freeID(node);
-			return;
+			return; }
 		case NT_EXNB:
 			ass_ld(nb_getValue(node), destination);
 			freeNb(node);
@@ -332,10 +419,11 @@ void st_computeFctCall(st_Node_t node)
 	
 	// --- Compute function name
 	char* fctName = id_getName(node_getChild(node,0));
+	int fctLine = id_getLine(node_getChild(node,0));
 	int nbParams = funT_getNbParamsByFunName(fctName);
 	if(nbParams == -1)
 	{
-		errorSymbol(ERR_FATAL, "the function %s is undefined", fctName, 0);
+		errorSymbol(ERR_FATAL, "the function %s is undefined", fctName, fctLine);
 	}
 	
 	// --- Compute params
@@ -349,7 +437,7 @@ void st_computeFctCall(st_Node_t node)
 		nbParams--;
 	}
 	if(nbParams != 0)
-		errorSymbol(ERR_FATAL, "wrong number of parameters for the function %s", fctName, 0);
+		errorSymbol(ERR_FATAL, "wrong number of parameters for the function %s", fctName, fctLine);
 	
 	// --- Compute function call
 	if(!strcmp(fctName, "print"))
@@ -362,7 +450,8 @@ void st_computeFctCall(st_Node_t node)
 		ass_fctCallEnd();
 	}
 	
-	freeNodeAll(params);
+	if(params != ST_UNDEFINED)
+		freeNodeAll(params);
 	freeID(node_getChild(node,0)); //id
 }
 
@@ -411,16 +500,20 @@ void st_computeDeclVar(st_Node_t node)
 			st_computeExpression(node_getChild(var,1), 0);
 			node_setChild(var,1,ST_UNDEFINED);
 		}
+		// --- Compute Arrays
+		int arraySize = 1;
+		if(node_getChild(var,2) != ST_UNDEFINED)
+		{
+			arraySize = nb_getValue(node_getChild(var,2));
+		}
+		
 		// --- Compute ID
 		char* varName = id_getName(node_getChild(var,0));
-		ass_declVar(varName);
+		ass_declVar(varName, arraySize);
 		
 		declVar = (Node*) node_getChild(declVar,1);
 	}
 }
-
-
-
 
 void st_compute(st_Node_t node)
 {
@@ -431,11 +524,7 @@ void st_compute(st_Node_t node)
 	}
 	
 	if(node == ST_UNDEFINED)
-	{
-		if(treeRoot == ST_UNDEFINED)
-			return; // error
-		node = treeRoot;
-	}
+		return;
 	
 	switch(getNodeType(node))
 	{
@@ -476,29 +565,28 @@ void st_compute(st_Node_t node)
 			st_computeDeclVar(node);
 			freeNodeAll(node);
 			break;
-		case NT_WHILE:
-			ass_whileBegin(labelNumber);
-			st_computeExpression(node_getChild(node,0), 0);
-			ass_whileDo(labelNumber);
-			if(node_getChild(node,1) != ST_UNDEFINED)
-				st_compute(node_getChild(node,1));
-			ass_whileEnd(labelNumber);
+		case NT_WHILE: {
+			int numlabel = labelNumber;
 			labelNumber++;
-			freeNode(node);
-			break;
-		case NT_IF:
-			ass_ifBegin(labelNumber);
+			ass_whileBegin(numlabel);
 			st_computeExpression(node_getChild(node,0), 0);
-			ass_ifThen(labelNumber);
-			if(node_getChild(node,1) != ST_UNDEFINED)
-				st_compute(node_getChild(node,1));
-			ass_ifElse(labelNumber);
-			if(node_getChild(node,2) != ST_UNDEFINED)
-				st_compute(node_getChild(node,2));
-			ass_ifEnd(labelNumber);
-			labelNumber++;
+			ass_whileDo(numlabel);
+			st_compute(node_getChild(node,1));
+			ass_whileEnd(numlabel);
 			freeNode(node);
-			break;
+			break;}
+		case NT_IF: {
+			int numlabel = labelNumber;
+			labelNumber++;
+			ass_ifBegin(numlabel);
+			st_computeExpression(node_getChild(node,0), 0);
+			ass_ifThen(numlabel);
+			st_compute(node_getChild(node,1));
+			ass_ifElse(numlabel);
+			st_compute(node_getChild(node,2));
+			ass_ifEnd(numlabel);
+			freeNode(node);
+			break; }
 		case NT_RETURN:
 			st_computeExpression(node_getChild(node,0), 0);
 			ass_return();
@@ -509,6 +597,8 @@ void st_compute(st_Node_t node)
 			break;
 	}
 }
+
+
 
 
 
@@ -557,7 +647,7 @@ void st_printTree(st_Node_t node, int indent)
 
 st_Node_t st_optimizeSimpleExpression(st_Node_t node)
 {
-	st_Node_t res;
+	st_Node_t res = node;
 	int op1, op2;
 	
 	if(getNodeType(node_getChild(node,0))!=NT_EXNB ||
@@ -622,23 +712,33 @@ st_Node_t st_optimizeInstruction(st_Node_t node)
 
 st_Node_t st_optimizeBloc(st_Node_t node)
 {
-	for(Node* inst = (Node*) node_getChild(node,0); inst != ST_UNDEFINED;)
+	Node* inst = (Node*) node_getChild(node,0);
+	Node* lastInst = ST_UNDEFINED;
+	while(inst != ST_UNDEFINED)
 	{
 		st_Node_t newInst = st_optimizeInstruction(node_getChild(inst,0));
 		node_setChild(inst,0,newInst);
-		inst = (Node*) node_getChild(inst,1);
+		if(newInst == ST_UNDEFINED)
+		{
+			Node* tmp = inst;
+			inst = (Node*) node_getChild(inst,1);
+			node_setChild(tmp, 1, ST_UNDEFINED);
+			freeNodeAll(tmp);
+			if(lastInst != ST_UNDEFINED)
+				node_setChild(lastInst, 1, inst);
+		}
+		else
+		{
+			lastInst = inst;
+			inst = (Node*) node_getChild(inst,1);
+		}
 	}
 	return node;
 }
 
 st_Node_t st_optimize(st_Node_t node)
 {
-	if(node == ST_UNDEFINED)
-	{
-		if(treeRoot == ST_UNDEFINED)
-			return ST_UNDEFINED; // error
-		node = treeRoot;
-	}
+	st_Node_t res = node;
 	
 	if(isNodeExpression2Op(node) || getNodeType(node)==NT_EXNOT)
 		node = st_optimizeSimpleExpression(node);
@@ -648,6 +748,33 @@ st_Node_t st_optimize(st_Node_t node)
 		case NT_BLOC:
 			node = st_optimizeBloc(node);
 			break;
+		case NT_WHILE:
+			if(getNodeType(node_getChild(node,0)) == NT_EXNB)
+			{
+				if(nb_getValue(node_getChild(node,0)) == 0)
+				{
+					res = ST_UNDEFINED;
+					freeNodeAll(node);
+				}
+			}
+			return res;
+		case NT_IF:
+			if(getNodeType(node_getChild(node,0)) == NT_EXNB)
+			{
+				if(nb_getValue(node_getChild(node,0)) == 0)
+				{
+					res = node_getChild(node,2);
+					node_setChild(node,2,ST_UNDEFINED);
+					freeNodeAll(node);
+				}
+				else
+				{
+					res = node_getChild(node,1);
+					node_setChild(node,1,ST_UNDEFINED);
+					freeNodeAll(node);
+				}
+			}
+			return res;
 		default:
 			break;
 	}
@@ -676,14 +803,14 @@ st_Node_t st_createNode(st_NodeType type, st_Node_t n1, st_Node_t n2, st_Node_t 
 
 
 /* --- Feuilles --- */
-st_Node_t st_type(int type, int flags)
+st_Node_t st_type(int type, int flags, int nbPtr)
 {
-	return createType(type,flags);
+	return createType(type,flags,nbPtr);
 }
 
-st_Node_t st_id(char* id)
+st_Node_t st_id(char* id, int line)
 {
-	return createID(id);
+	return createID(id, line);
 }
 
 st_Node_t st_exNb(int val)

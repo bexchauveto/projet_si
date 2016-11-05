@@ -48,6 +48,7 @@ int Ijmp2(Instruction* ins);
 int Isip(Instruction* ins);
 int Inot(Instruction* ins);
 // divers
+void affiche1Inst(int indice);
 void afficheData(int indice, int nb);
 void afficheInst(int indice, int nb);
 
@@ -154,7 +155,7 @@ int readFile(FILE* fichier)
 		
 		code[i] = ins;
 		i++;
-	} while((error = fgets(line,sizeof(line)-1,fichier)));
+	} while(fgets(line,sizeof(line)-1,fichier));
 	
 	i++;
 	code[i].code = 0;
@@ -188,13 +189,9 @@ int execute()
 	while(!error)
 	{
 		ins = &(code[R_IP]);
-		// trace?
-		/*if(ins->code != 0)
-			printf("code : %c\n", ins->code);
-		else
-			printf("code : 0\n");*/
+		//affiche1Inst(R_IP);
+		//afficheData(0,10);
 		R_IP++;
-		printf("exec : %d\n", ins->code);
 		error = tabInstInfo[ins->code].cb(ins);
 		if(R_IP<0 || R_IP>=SIZE_CODE)
 			error = -2;
@@ -310,23 +307,20 @@ int Iequ(Instruction* ins)
 
 int Ipri(Instruction* ins)
 {
-	/*if(!testData(ins,0))
+	if(!testData(ins,0))
 		return -1;
-	printf("%d\n",val(ins,0));*/
-	afficheData(0,10);
+	printf("%d\n",val(ins,0));
 	return 0;
 }
 
 int Icopa(Instruction* ins)
 {
-	printf("# %d %d\n", ins->op[0], ins->op[1]);
 	if(!testData(ins,0) || !testData(ins,1))
 		return -1;
-	ins->op[1] = val(ins,1);
-	printf("# %d\n", ins->op[1]);
-	if(!testData(ins,1))
+	ins->op[2] = val(ins,1);
+	if(!testData(ins,2))
 		return -1;
-	*p_val(ins,0) = val(ins,1);
+	*p_val(ins,0) = val(ins,2);
 	return 0;
 }
 
@@ -334,10 +328,10 @@ int Icopb(Instruction* ins)
 {
 	if(!testData(ins,0) || !testData(ins,1))
 		return -1;
-	ins->op[0] = val(ins,0);
-	if(!testData(ins,0))
+	ins->op[2] = val(ins,0);
+	if(!testData(ins,2))
 		return -1;
-	*p_val(ins,0) = val(ins,1);
+	*p_val(ins,2) = val(ins,1);
 	return 0;
 }
 
@@ -369,6 +363,12 @@ int Inot(Instruction* ins)
 
 
 /******         Divers         ******/
+
+void affiche1Inst(int indice)
+{
+	Instruction ins = code[indice];
+	printf("exec line %d : %x %d %d %d\n", indice, ins.code, ins.op[0], ins.op[1], ins.op[2]);
+}
 
 void afficheData(int indice, int nb)
 {

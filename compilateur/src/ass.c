@@ -54,9 +54,9 @@ void empiler(int reg)
 
 void depiler(int reg)
 {
-	printInst("6 %d 1\n", reg); // *reg = 1
+	printInst("6 %d 1\n", reg); // reg = 1
 	printInst("3 %d %d %d\n", ADDR_SP, ADDR_SP, reg); // SP--
-	printInst("D %d %d\n", reg, ADDR_SP); // *reg = *SP
+	printInst("D %d %d\n", reg, ADDR_SP); // reg = *SP
 }
 
 
@@ -85,7 +85,7 @@ void ass_progBegin()
 	instructionNumber = 1;
 	printInst("6 %d 0\n", ADDR_STACK); // STACK[0] = 0
 	printInst("6 %d %d\n", ADDR_SP, ADDR_STACK+1); // SP = ADDR_STACK + 1
-	printInst("7 .main\n"); // goto main
+	printInst("7 .main     \n"); // goto main
 }
 
 void ass_progEnd()
@@ -106,6 +106,7 @@ void ass_fctBegin(char* fctName, int nbParams)
 	{
 		symboleT_pushTable(tabParams[i], (-2-nbParams) + i );
 	}
+	symboleT_setSymboleNumber(0);
 }
 
 void ass_fctEnd(char* fctName)
@@ -130,40 +131,48 @@ void ass_blocEnd()
 	symboleT_endBloc();
 }
 
-void ass_declVar(char* varName)
+void ass_declVar(char* varName, int arraySize)
 {
 	PRINT_DEBUG();
 	int addr = symboleT_getSymboleNumber();
 	symboleT_pushTable(varName, addr);
-	empiler(ADDR_R0); // empiler varName
+	if(arraySize <= 1)
+		empiler(ADDR_R0); // empiler varName
+	else
+	{
+		// traiter les tableaux
+		for(int i = 1; i < arraySize; i++)
+			symboleT_pushTable("", addr);
+		printInst("6 %d %d\n", ADDR_R0, arraySize); // R0 = arraySize
+		printInst("1 %d %d %d\n", ADDR_SP, ADDR_SP, ADDR_R0); // SP += arraySize
+	}
 }
 
 void ass_ldr(char* varName, int reg)
 {
 	PRINT_DEBUG();
 	int addr = symboleT_seekAddressByName(varName);
-	if(addr == -1)
-		errorSymbol(ERR_FATAL, "the variable %s is undeclared", varName, 0);
 	printInst("6 %d %d\n", ADDR_R0 + reg, addr); // reg = addr
 	printInst("1 %d %d %d\n", ADDR_R0 + reg, ADDR_R0 + reg, ADDR_CONTEXT); // addr += CONTEXT
 	printInst("D %d %d\n", ADDR_R0 + reg, ADDR_R0 + reg); // reg = *addr
 }
 
-void ass_str(char* varName)
+void ass_str()
 {
 	PRINT_DEBUG();
-	int addr = symboleT_seekAddressByName(varName);
-	if(addr == -1)
-		errorSymbol(ERR_FATAL, "the variable %s is undeclared", varName, 0);
-	printInst("6 %d %d\n", ADDR_R1, addr); // R1 = addr
-	printInst("1 %d %d %d\n", ADDR_R1, ADDR_R1, ADDR_CONTEXT); // addr += CONTEXT
-	printInst("E %d %d\n", ADDR_R1, ADDR_R0); // *addr = R0
+	printInst("E %d %d\n", ADDR_R0, ADDR_R1); // *R0 = R1
 }
 
 void ass_ld(int value, int reg)
 {
 	PRINT_DEBUG();
 	printInst("6 %d %d\n", ADDR_R0 + reg, value);
+}
+
+void ass_mov(int reg1, int reg2)
+{
+	PRINT_DEBUG();
+	printInst("5 %d %d\n", ADDR_R0 + reg1, ADDR_R0 + reg2);
 }
 
 void ass_pushResult()
@@ -205,18 +214,18 @@ void ass_div()
 void ass_and()
 {
 	PRINT_DEBUG();
-	printInst("8 %d %d\n", ADDR_R0, instructionNumber+3); // if(!R0)  goto false;
-	printInst("8 %d %d\n", ADDR_R1, instructionNumber+2); // if(!R1)  goto false;
-	printInst("7 %d\n", instructionNumber+2);             // true:  goto end;
+	printInst("8 %d %d\n", ADDR_R0, instructionNumber+2); // if(!R0)  goto false;
+	printInst("8 %d %d\n", ADDR_R1, instructionNumber+1); // if(!R1)  goto false;
+	printInst("7 %d\n", instructionNumber+1);             // true:  goto end;
 	printInst("6 %d %d\n", ADDR_R0, 0);                   // false: R0 = 0
 }
 
 void ass_or()
 {
 	PRINT_DEBUG();
-	printInst("8 %d %d\n", ADDR_R0, instructionNumber+2); // if(!R0)  goto testR1;
-	printInst("7 %d\n", instructionNumber+3);             // goto end;
-	printInst("8 %d %d\n", ADDR_R1, instructionNumber+2); // if(!R1)  goto end;
+	printInst("8 %d %d\n", ADDR_R0, instructionNumber+1); // if(!R0)  goto testR1;
+	printInst("7 %d\n", instructionNumber+2);             // goto end;
+	printInst("8 %d %d\n", ADDR_R1, instructionNumber+1); // if(!R1)  goto end;
 	printInst("6 %d %d\n", ADDR_R0, 1);                   // R0 = 1
 }
 
@@ -248,8 +257,6 @@ void ass_ref(char* varName, int reg)
 {
 	PRINT_DEBUG();
 	int addr = symboleT_seekAddressByName(varName);
-	if(addr == -1)
-		errorSymbol(ERR_FATAL, "the variable %s is undeclared", varName, 0);
 	printInst("6 %d %d\n", ADDR_R0+reg, addr); // reg = addr
 	printInst("1 %d %d %d\n", ADDR_R0+reg, ADDR_R0+reg, ADDR_CONTEXT); // addr += CONTEXT
 }
@@ -270,9 +277,11 @@ void ass_fctCallParam()
 void ass_fctCallJmp(char* fctName)
 {
 	PRINT_DEBUG();
-	printInst("10 %d\n", ADDR_R1); // R1 = adresse de retour
-	empiler(ADDR_R1);
-	printInst("7 .%s\n", fctName);
+	printInst("6 %d %d\n", ADDR_R1, 5);
+	printInst("10 %d\n", ADDR_R0); // R1 = adresse de retour
+	printInst("1 %d %d %d\n", ADDR_R0, ADDR_R0, ADDR_R1);
+	empiler(ADDR_R0);
+	printInst("7 .%s        \n", fctName);
 }
 
 void ass_fctCallEnd()
@@ -291,7 +300,7 @@ void ass_ifBegin(int numLabel)
 void ass_ifThen(int numLabel)
 {
 	PRINT_DEBUG();
-	char label[10];
+	char label[15];
 	sprintf(label, "%delse",numLabel);
 	labelT_pushTableName(label);
 	printInst("8 %d .%s\n", ADDR_R0, label); // if(!R0) goto else
@@ -300,7 +309,7 @@ void ass_ifThen(int numLabel)
 void ass_ifElse(int numLabel)
 {
 	PRINT_DEBUG();
-	char label[10];
+	char label[15];
 	sprintf(label, "%deif",numLabel);
 	labelT_pushTableName(label);
 	printInst("7 .%s\n", label); // goto ifEnd
@@ -312,7 +321,7 @@ void ass_ifElse(int numLabel)
 void ass_ifEnd(int numLabel)
 {
 	PRINT_DEBUG();
-	char label[10];
+	char label[15];
 	sprintf(label, "%deif",numLabel);
 	labelT_addAddressToLabel(label, instructionNumber);
 }
@@ -320,7 +329,7 @@ void ass_ifEnd(int numLabel)
 void ass_whileBegin(int numLabel)
 {
 	PRINT_DEBUG();
-	char label[10];
+	char label[15];
 	sprintf(label, "%dbwhl",numLabel);
 	labelT_pushTableComplet(label, instructionNumber);
 }
@@ -328,7 +337,7 @@ void ass_whileBegin(int numLabel)
 void ass_whileDo(int numLabel)
 {
 	PRINT_DEBUG();
-	char label[10];
+	char label[15];
 	sprintf(label, "%dewhl",numLabel);
 	labelT_pushTableComplet(label, instructionNumber);
 	printInst("8 %d .%s\n", ADDR_R0, label); // if(!R0) goto whileEnd
@@ -337,7 +346,7 @@ void ass_whileDo(int numLabel)
 void ass_whileEnd(int numLabel)
 {
 	PRINT_DEBUG();
-	char label[10];
+	char label[15];
 	sprintf(label, "%dbwhl",numLabel);
 	printInst("7 .%s\n", label); // goto whileBegin
 	

@@ -10,6 +10,7 @@
 typedef struct
 {
 	char * varName;
+	int line;
 	int adresseExec;
 	int courantBloc;
 } SymboleStruct;
@@ -78,7 +79,7 @@ void symboleT_endFunc()
 }
 
 /*
- * Function that push into the stack a new entry composed by a name, a address and a bloc number
+ * Function that push into the stack a new entry composed by a name, an address and a bloc number
  */
 void symboleT_pushTable(char * name, int addr)
 {
@@ -109,6 +110,14 @@ void symboleT_popTable()
 int symboleT_getSymboleNumber()
 {
 	return numSymbole;
+}
+
+/*
+ * Function that set the number of symbols pushed in the table
+ */
+void symboleT_setSymboleNumber(int nbSymbols)
+{
+	numSymbole = nbSymbols;
 }
 
 /*
